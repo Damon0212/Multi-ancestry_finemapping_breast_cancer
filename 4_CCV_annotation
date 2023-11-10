@@ -1,0 +1,662 @@
+### Harmonize and summarize chrom-chrom interaction datasets
+### liftover bd37 into bd38 for chrom-chrom interaction datasets
+
+
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver ChiA-PET_IHH015F.BED /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz ChiA-PET_IHH015F.BED38 ChiA-PET_IHH015F.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver ChiA-PET_IHM001F.BED /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz ChiA-PET_IHM001F.BED38 ChiA-PET_IHM001F.unlifted
+
+## promoterCaptureHiC_CHiCAGO and variantCaptureHiC_CHiCAGO
+less -S /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/QIMRB_breast.promoterCaptureHiC_CHiCAGO_peakMatrix.txt.gz
+less -S /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/QIMRB_breast.variantCaptureHiC_CHiCAGO_peakMatrix.txt.gz
+zcat /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/QIMRB_breast.promoterCaptureHiC_CHiCAGO_peakMatrix.txt.gz|sed 1d| awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$6"_"$7"_"$8}' >  PHiC_CHiCAGO.BED
+zcat /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/QIMRB_breast.variantCaptureHiC_CHiCAGO_peakMatrix.txt.gz|sed 1d| awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$6"_"$7"_"$8}' >  VHiC_CHiCAGO.BED
+
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver PHiC_CHiCAGO.BED /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz PHiC_CHiCAGO.BED38 PHiC_CHiCAGO.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(sed 's/_/\t/g' PHiC_CHiCAGO.BED38 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz PHiC_CHiCAGO.step2 PHiC_CHiCAGO.unlifted.step2
+sed 's/_/\t/g' PHiC_CHiCAGO.step2 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > PHiC_CHiCAGO_bait_outcome
+
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver VHiC_CHiCAGO.BED /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz VHiC_CHiCAGO.BED38 VHiC_CHiCAGO.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(sed 's/_/\t/g' VHiC_CHiCAGO.BED38 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz VHiC_CHiCAGO.step2 VHiC_CHiCAGO.unlifted.step2
+sed 's/_/\t/g' VHiC_CHiCAGO.step2 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > VHiC_CHiCAGO_bait_outcome
+
+## HiC by Rao et al.
+zcat /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/GSE63525_HMEC_HiCCUPS_looplist.txt.gz|sed 1d | awk 'BEGIN { OFS = "\t"} {print "chr"$1,$2,$3,"chr"$4"_"$5"_"$6}' > Rao_HiC.BED
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver Rao_HiC.BED /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz Rao_HiC_step2 Rao_HiC.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(sed 's/_/\t/g' Rao_HiC_step2   | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz Rao_HiC_step3 Rao_HiC.unlifted2
+sed 's/_/\t/g' Rao_HiC_step3 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > Rao_HiC_HMEC_sec1_sec2
+
+
+
+## 4DGenome_HomoSapiens_hg19
+# 4DGenome_breast includes following breast cells. hg19 data, needs to be recoded into hg38
+# HCC1954 cells:  epithelial breast cancer cell line isolated from a primary stage IIA, grade 3 invasive ductal carcinoma with no lymph node metastases
+# HMEC cells: Human Mammary Epithelial Cells (HMEC) are isolated from adult female breast tissue
+# MCF7 cell:  a human breast cancer cell line with estrogen, progesterone and glucocorticoid receptors ;derived from the pleural effusion of a 69-year-old Caucasian metastatic breast cancer (adenocarcinoma) in 1970 by Dr Soule of the Michigan Cancer Foundation, Detroit, MI
+
+awk 'BEGIN { OFS = "\t"} {if($10=="HCC1954" ||$10=="HMEC"|| $10=="MCF7"||$10== "Breast"||$10=="Cell/Tissue") print $0}' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/4DGenome_HomoSapiens_hg19.txt > 4DGenome_breast
+
+## 4DGenome datasets include data from multiple sources
+## Divide 4DGenome into 3C (27 records only) and ChIA-PET section (experimental), and IM-PET section (computational)
+sed 1d 4DGenome_breast | awk 'BEGIN { OFS = "\t"} {if($11 == "3C") print $0}'  |awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4"_"$5"_"$6}' > 4DGenome_breast_3C_hg19
+sed 1d 4DGenome_breast | awk 'BEGIN { OFS = "\t"} {if($11 == "ChIA-PET") print $0}'  |awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4"_"$5"_"$6}' > 4DGenome_breast_ChIA-PET_hg19
+sed 1d 4DGenome_breast | awk 'BEGIN { OFS = "\t"} {if($11 == "IM-PET") print $0}'  |awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4"_"$5"_"$6}' > 4DGenome_breast_IM-PET_hg19
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver 4DGenome_breast_3C_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_3C_step2 4DGenome_breast_3C.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver 4DGenome_breast_ChIA-PET_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_ChIA-PET_step2 4DGenome_breast_ChIA-PET.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver 4DGenome_breast_IM-PET_hg19   /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_IM-PET_step2  4DGenome_breast_IM-PET.unlifted
+
+## After liftover, some bd38 chr has string like "chr22_KI270879v1_alt". Exclude them using index() function in awk
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_3C_step2 |sed 's/_/\t/g' | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_3C_step3 4DGenome_breast_3C.unlifted2
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_ChIA-PET_step2 |sed 's/_/\t/g' | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_ChIA-PET_step3 4DGenome_breast_ChIA-PET.unlifted2
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver <(awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_IM-PET_step2 |sed 's/_/\t/g'   | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}') /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz 4DGenome_breast_IM-PET_step3 4DGenome_breast_IM-PET.unlifted2
+
+awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_3C_step3 | sed 's/_/\t/g'  | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > 4DGenome_3C_sec1_sec2_bd38
+awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_ChIA-PET_step3 | sed 's/_/\t/g'  | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > 4DGenome_ChIA-PET_sec1_sec2_bd38
+awk 'BEGIN { OFS = "\t"} {if(index($1,"_")==0) print $0}' 4DGenome_breast_IM-PET_step3 | sed 's/_/\t/g'  | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > 4DGenome_IM-PET_sec1_sec2_bd38
+
+
+
+## EnhancerAtlas 2.0 includes computational enhancer-gene interaction in six breast cell. in hg19 data:
+(1) MCF10A is a non-tumourigenic human breast epithelial cell line derived from benign proliferative breast tissue, characterised by a lack of estrogen receptor (ER) expression10.
+
+(2) MCF7 is a widely used in vitro model established from pleural effusion samples from a patient with metastatic BC
+
+(3) Human Mammary Epithelial Cells (HMEC) 
+
+(4) HCC1954 is an epithelial breast cancer cell line isolated from a primary stage IIA, grade 3 invasive ductal carcinoma with no lymph node metastases
+
+(5) T-47D are epithelial cells isolated from a pleural effusion obtained from a 54-year-old female patient with an infiltrating ductal carcinoma of the breast.
+
+(6) ZR-75-30 is an epithelial cell line that was isolated from the mammary gland of a Black, 47-year-old, female patient's breast with Ductal Carcinoma. 
+
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/HCC1954_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_HCC1954_hg19
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/HMEC_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_HMEC_hg19
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/MCF-7_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_MCF7_hg19
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/MCF10A_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_MCF10A_hg19
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/T47D_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_T47D_hg19
+sed 's/\$/\t/g' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/ZR75-30_EP.txt | awk 'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g'|sed 's/-/\t/g'|sed 's/_/\t/g' |less -S > EnhancerAtlas_ZR75-30_hg19
+
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_HCC1954_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_HCC1954_hg38 EnhancerAtlas_HCC1954.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_HMEC_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_HMEC_hg38 EnhancerAtlas_HMEC.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_MCF7_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_MCF7_hg38 EnhancerAtlas_MCF7.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_MCF10A_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_MCF10A_hg38 EnhancerAtlas_MCF10A.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_T47D_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_T47D_hg38 EnhancerAtlas_T47D.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver EnhancerAtlas_ZR75-30_hg19 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz EnhancerAtlas_ZR75-30_hg38 EnhancerAtlas_ZR75-30.unlifted
+
+cat EnhancerAtlas_HCC1954_hg38  EnhancerAtlas_HMEC_hg38  EnhancerAtlas_MCF7_hg38  EnhancerAtlas_MCF10A_hg38  EnhancerAtlas_T47D_hg38  EnhancerAtlas_ZR75-30_hg38 |sort|uniq>  EnhancerAtlas_hg38
+
+
+## FANTOM5 in hg19
+/gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_enhancer_tss_associations.bed
+/gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_hg19_enhancer_promoter_correlations_distances_cell_type.txt.gz
+/gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_hg19_enhancer_promoter_correlations_distances_organ.txt.gz
+
+
+awk -F";"  'BEGIN { OFS = "\t"} {print $1}' /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_enhancer_tss_associations.bed > FANTOM5_enhancer_tss_step1
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_enhancer_tss_step1 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_enhancer_tss_step2 FANTOM5_enhancer_tss.unlifted
+sed 's/:/\t/g' FANTOM5_enhancer_tss_step2  |sed 's/-/\t/g'| awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}' > FANTOM5_enhancer_tss_step3
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_enhancer_tss_step3 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_enhancer_tss_step4 FANTOM5_enhancer_tss.unlifted2
+sed 's/_/\t/g' FANTOM5_enhancer_tss_step4  | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > FANTOM5_enhancer_tss_bd38
+
+
+zcat /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_hg19_enhancer_promoter_correlations_distances_cell_type.txt.gz|sed 1d |awk -F","  'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g' |sed 's/-/\t/g' |sed 's/\../\t/g' |awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4"_"$5"_"$6}' > FANTOM5_ep_cell_step1
+zcat /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/FANTOM5_hg19_enhancer_promoter_correlations_distances_organ.txt.gz    |sed 1d |awk -F","  'BEGIN { OFS = "\t"} {print $1}' | sed 's/:/\t/g' |sed 's/-/\t/g' |sed 's/\../\t/g' |awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4"_"$5"_"$6}' > FANTOM5_ep_organ_step1
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_ep_cell_step1 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_ep_cell_step2 FANTOM5_ep_cell.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_ep_organ_step1 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_ep_organ_step2 FANTOM5_ep_organ.unlifted
+sed 's/_/\t/g' FANTOM5_ep_cell_step2 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}' > FANTOM5_ep_cell_step3
+sed 's/_/\t/g' FANTOM5_ep_organ_step2 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1"_"$2"_"$3}' > FANTOM5_ep_organ_step3
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_ep_cell_step3 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_ep_cell_step4 FANTOM5_ep_cell.unlifted2
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver FANTOM5_ep_organ_step3 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz FANTOM5_ep_organ_step4 FANTOM5_ep_organ.unlifted2
+sed 's/_/\t/g' FANTOM5_ep_cell_step4 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > FANTOM5_ep_cell_bd38
+sed 's/_/\t/g' FANTOM5_ep_organ_step4 | awk 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' > FANTOM5_ep_organ_bd38
+cat FANTOM5_enhancer_tss_bd38 FANTOM5_ep_cell_bd38 FANTOM5_ep_organ_bd38 |sort|uniq>  FANTOM5_hg38
+
+
+### Super Enhancer Cell 2013
+sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/SE_Cell2013_HCC1954.csv | awk -F","  'BEGIN { OFS = "\t"} {if($7==1) print $2,$3,$4,$5}' > SE_Cell2013_HCC1954
+sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/SE_Cell2013_HMEC.csv    | awk -F","  'BEGIN { OFS = "\t"} {if($7==1) print $2,$3,$4,$5}' > SE_Cell2013_HMEC
+sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/SE_Cell2013_MCF-7.csv   | awk -F","  'BEGIN { OFS = "\t"} {if($7==1) print $2,$3,$4,$5}' > SE_Cell2013_MCF7
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver SE_Cell2013_HCC1954 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz SE_Cell2013_HCC1954_bd38 SE_Cell2013_HCC1954.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver SE_Cell2013_HMEC /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz SE_Cell2013_HMEC_bd38 SE_Cell2013_HMEC.unlifted
+/gpfs52/nobackup/sbcs/damon/liftover/liftOver SE_Cell2013_MCF7 /gpfs52/nobackup/sbcs/damon/liftover/hg19ToHg38.over.chain.gz SE_Cell2013_MCF7_bd38 SE_Cell2013_MCF7.unlifted
+cat SE_Cell2013_HCC1954_bd38  SE_Cell2013_HMEC_bd38 SE_Cell2013_MCF7_bd38 |sort|uniq>  SE_Cell2013_hg38
+
+
+## Super Enhancer SEdb 2.0, in bd38 already
+cd /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/
+FILES="/gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/Human_Mammary_gland_hg38/*"
+for f in $FILES
+do
+  echo "Processing $f file..."
+  # take action on each file. $f store current file name
+  sed 1d "$f" >> SEdb_Mammary
+done
+
+cat SEdb_Mammary <(sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/Human_Breast_cancer_cell_line_lung_metastatic_variant_hg38/SE_02_0991_SE_hg38.bed) <(sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/Human_Breast_cancer_brain_metastatic_variant_hg38/SE_02_0990_SE_hg38.bed) <(sed 1d /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/Human_Breast_cancer_cell_line_lung_metastatic_variant_hg38/SE_02_0991_SE_hg38.bed )>SEdb_breast_all 
+
+cd /gpfs52/nobackup/sbcs/damon/AABCGS/Annotation
+head -1 /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/Human_Breast_cancer_cell_line_lung_metastatic_variant_hg38/SE_02_0991_SE_hg38.bed > header
+cat header /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/SEdb_breast_all  > SEdb_breast_step1
+
+module load GCC/5.4.0-2.26  OpenMPI/1.10.3 R/3.3.3
+SEdb <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/SEdb_breast_step1",sep = "\t",header=T)
+write.table(SEdb[,c(1,2,3,16,17,18,19,20,21)], file ="SEdb_breast_Enh_genes.txt",sep="\t", row.names=F,col.names=T, quote=F)
+
+######### Files:
+### Experimental
+#PHiC_CHiCAGO_bait_outcome
+#VHiC_CHiCAGO_bait_outcome
+#Rao_HiC_HMEC_sec1_sec2
+#4DGenome_3C_sec1_sec2_bd38
+#4DGenome_ChIA-PET_sec1_sec2_bd38
+
+### Computational
+#4DGenome_IM-PET_sec1_sec2_bd38
+#FANTOM5_hg38
+#EnhancerAtlas_hg38
+#SE_Cell2013_h
+#SEdb_breast_Enh_genes.txt
+
+#TAD file: /gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/TAD_hg38/HMEC_Rao_2014-raw_TADs.txt
+
+
+########## Filter the chrom-chrom pairs with CCVs located at one pair
+module load GCC/5.4.0-2.26  OpenMPI/1.10.3 R/3.3.3
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+library(dplyr)
+#library(tidyr)
+CCV<- read.table("/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_summary_new.txt",sep = "\t",header=T)
+#CCV<- CCV %>% separate(SNP,":", c("chr", "pos","A1","A2"))
+CCV$CHR<-paste("chr",CCV$Chr,sep="")
+soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+PHiC_CHiCAGO<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/PHiC_CHiCAGO_bait_outcome",sep = "\t",header=F)
+PHiC_CHiCAGO <- PHiC_CHiCAGO[PHiC_CHiCAGO$V4 %in% soma_chr,]
+PHiC_CHiCAGO$withCCV <- 0
+for (i in 1: nrow(PHiC_CHiCAGO)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==PHiC_CHiCAGO$V4[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > PHiC_CHiCAGO$V5[i] & CCV_work$BP[j] < PHiC_CHiCAGO$V6[i]) PHiC_CHiCAGO$withCCV[i] <-1
+	}
+}
+
+write.table(PHiC_CHiCAGO[PHiC_CHiCAGO$withCCV==1,], file ="PHiC_CHiCAGO_withCCV",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+VHiC_CHiCAGO<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/VHiC_CHiCAGO_bait_outcome",sep = "\t",header=F)
+VHiC_CHiCAGO <- VHiC_CHiCAGO[VHiC_CHiCAGO$V4 %in% soma_chr & VHiC_CHiCAGO$V1 %in% soma_chr  ,]
+VHiC_CHiCAGO$withCCV_bait <- 0
+VHiC_CHiCAGO$withCCV_outcome <- 0
+dim(VHiC_CHiCAGO[VHiC_CHiCAGO$V1!=VHiC_CHiCAGO$V4,])
+
+for (i in 1: nrow(VHiC_CHiCAGO)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==VHiC_CHiCAGO$V4[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > VHiC_CHiCAGO$V5[i] & CCV_work$BP[j] < VHiC_CHiCAGO$V6[i]) VHiC_CHiCAGO$withCCV_outcome[i] <-1
+		
+	}
+	CCV_work2 <- CCV[CCV$CHR==VHiC_CHiCAGO$V1[i],]
+	if(nrow(CCV_work2)==0) next
+	for (j in 1: nrow(CCV_work2) ){
+		if(CCV_work2$BP[j] > VHiC_CHiCAGO$V2[i] & CCV_work2$BP[j] < VHiC_CHiCAGO$V3[i]) VHiC_CHiCAGO$withCCV_bait[i] <-1
+	}
+}
+
+write.table(VHiC_CHiCAGO[VHiC_CHiCAGO$withCCV_outcome==1  ,], file ="VHiC_CHiCAGO_withCCV_outcome",sep="\t", row.names=F,col.names=T, quote=F)
+write.table(VHiC_CHiCAGO[VHiC_CHiCAGO$withCCV_bait==1 ,]    , file ="VHiC_CHiCAGO_withCCV_bait",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+Rao_HiC_HMEC<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/Rao_HiC_HMEC_sec1_sec2",sep = "\t",header=F)
+Rao_HiC_HMEC<- Rao_HiC_HMEC[Rao_HiC_HMEC$V4 %in% soma_chr & Rao_HiC_HMEC$V1 %in% soma_chr  ,]
+Rao_HiC_HMEC$withCCV_left <- 0
+Rao_HiC_HMEC$withCCV_right <- 0
+dim(Rao_HiC_HMEC[Rao_HiC_HMEC$V1!=Rao_HiC_HMEC$V4,]) # none
+for (i in 1: nrow(Rao_HiC_HMEC)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==Rao_HiC_HMEC$V4[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > Rao_HiC_HMEC$V5[i] & CCV_work$BP[j] < Rao_HiC_HMEC$V6[i]) Rao_HiC_HMEC$withCCV_right[i] <-1
+		if(CCV_work$BP[j] > Rao_HiC_HMEC$V2[i] & CCV_work$BP[j] < Rao_HiC_HMEC$V3[i]) Rao_HiC_HMEC$withCCV_left[i] <-1
+	}
+}
+
+write.table(Rao_HiC_HMEC[Rao_HiC_HMEC$withCCV_left==1  ,], file ="Rao_HiC_HMEC_withCCV_left",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+#Genome4D <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/4DGenome_ChIA-PET_sec1_sec2_bd38",sep = "\t",header=F)
+Genome4D <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/4DGenome_IM-PET_sec1_sec2_bd38",sep = "\t",header=F)
+Genome4D <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/4DGenome_3C_sec1_sec2_bd38",sep = "\t",header=F)
+
+Genome4D  <- Genome4D[Genome4D$V4 %in% soma_chr & Genome4D$V1 %in% soma_chr  ,]
+Genome4D$withCCV_left <- 0
+Genome4D$withCCV_right <- 0
+dim(Genome4D[Genome4D$V1!=Genome4D$V4,]) ## Yes
+
+for (i in 1: nrow(Genome4D)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==Genome4D$V4[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > Genome4D$V5[i] & CCV_work$BP[j] < Genome4D$V6[i]) Genome4D$withCCV_right[i] <-1
+		
+	}
+	CCV_work2 <- CCV[CCV$CHR==Genome4D$V1[i],]
+	if(nrow(CCV_work2)==0) next
+	for (j in 1: nrow(CCV_work2) ){
+		if(CCV_work2$BP[j] > Genome4D$V2[i] & CCV_work2$BP[j] < Genome4D$V3[i]) Genome4D$withCCV_left[i] <-1
+	}
+}
+#write.table(Genome4D[Genome4D$withCCV_left==1  ,], file ="Genome4D_ChIA-PET_withCCV_left",sep="\t", row.names=F,col.names=T, quote=F)
+#write.table(Genome4D[Genome4D$withCCV_right==1 ,], file ="Genome4D_ChIA-PET_withCCV_right",sep="\t", row.names=F,col.names=T, quote=F)
+write.table(Genome4D[Genome4D$withCCV_left==1  ,], file ="Genome4D_IM-PET_withCCV_left",sep="\t", row.names=F,col.names=T, quote=F)
+write.table(Genome4D[Genome4D$withCCV_right==1 ,], file ="Genome4D_IM-PET_withCCV_right",sep="\t", row.names=F,col.names=T, quote=F)
+
+write.table(Genome4D[Genome4D$withCCV_left==1  ,], file ="Genome4D_3C_withCCV_left",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+FANTOM5 <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/FANTOM5_hg38",sep = "\t",header=F)
+FANTOM5  <- FANTOM5[FANTOM5$V4 %in% soma_chr & FANTOM5$V1 %in% soma_chr  ,]
+FANTOM5$withCCV <- 0
+for (i in 1: nrow(FANTOM5)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==FANTOM5$V1[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > FANTOM5$V2[i] & CCV_work$BP[j] < FANTOM5$V3[i]) FANTOM5$withCCV[i] <-1
+	}
+}
+
+write.table(FANTOM5[FANTOM5$withCCV==1,], file ="FANTOM5_withCCV",sep="\t", row.names=F,col.names=T, quote=F)
+
+EnhancerAtlas <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/EnhancerAtlas_hg38",sep = "\t",header=F)
+EnhancerAtlas <- EnhancerAtlas[EnhancerAtlas$V1 %in% soma_chr  ,]
+EnhancerAtlas$withCCV <- 0
+for (i in 1: nrow(EnhancerAtlas)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==EnhancerAtlas$V1[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > EnhancerAtlas$V2[i] & CCV_work$BP[j] < EnhancerAtlas$V3[i]) EnhancerAtlas$withCCV[i] <-1
+	}
+}
+
+write.table(EnhancerAtlas[EnhancerAtlas$withCCV==1,], file ="EnhancerAtlas_withCCV",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+
+SE_Cell2013 <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/SE_Cell2013_hg38",sep = "\t",header=F)
+SE_Cell2013 <- SE_Cell2013[SE_Cell2013$V1 %in% soma_chr  ,]
+SE_Cell2013$withCCV <- 0
+for (i in 1: nrow(SE_Cell2013)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==SE_Cell2013$V1[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > SE_Cell2013$V2[i] & CCV_work$BP[j] < SE_Cell2013$V3[i]) SE_Cell2013$withCCV[i] <-1
+	}
+}
+
+write.table(SE_Cell2013[SE_Cell2013$withCCV==1,], file ="SE_Cell2013_withCCV",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+
+SEdb <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/SEdb_breast_Enh_genes.txt",sep = "\t",header=T)
+SEdb <- SEdb[SEdb$se_chr %in% soma_chr  ,]
+SEdb$withCCV <- 0
+for (i in 1: nrow(SEdb)) {
+	print(i)
+	CCV_work <- CCV[CCV$CHR==SEdb$se_chr[i],]
+	if(nrow(CCV_work)==0) next
+	for (j in 1: nrow(CCV_work) ){
+		if(CCV_work$BP[j] > SEdb$se_start[i] & CCV_work$BP[j] < SEdb$se_end[i]) SEdb$withCCV[i] <-1
+	}
+}
+SEdb_withCCV<-SEdb[SEdb$withCCV==1,]
+SEdb_withCCV2 <- SEdb_withCCV[SEdb_withCCV$se_gene_lasso !="" | SEdb_withCCV$se_gene_prestige !="",c(1,2,3,7,8)]
+SEdb_withCCV2$gene <- SEdb_withCCV2$se_gene_prestige
+SEdb_withCCV2[SEdb_withCCV2$se_gene_prestige =="",]$gene <- SEdb_withCCV2[SEdb_withCCV2$se_gene_prestige =="",]$se_gene_lasso
+
+write.table(SEdb_withCCV2[,c(1,2,3,6)], file ="SEdb_withCCV_new",sep="\t", row.names=F,col.names=T, quote=F)
+
+########## Further filter the chrom-chrom pairs located with CCVs at active enhancer mark (H3K27ac)
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+#### H3K27ac.R
+library(methods) 
+args <- commandArgs(trailingOnly=T)
+file <- as.character(args[1])
+
+#file <- "SEdb_withCCV"
+
+H3K27ac <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/Cistrome_breast_hm_H3K27ac_ALL",sep = "\t",header=F)
+soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+H3K27ac  <- H3K27ac[H3K27ac$V1 %in% soma_chr  ,]
+
+input <- read.table(paste("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/",file,sep=""),sep = "\t",header=T)
+names(input)[1:3] <- c("V1","V2","V3")
+input$H3K27ac <- 0
+for (i in 1: nrow(input)) {
+	print(i)
+	H3K27ac_work <- H3K27ac[H3K27ac$V1==input$V1[i],]
+	for (j in 1: nrow(H3K27ac_work) ){
+		#print(paste("i:",i,"j:",j))
+		cover_length <- max(H3K27ac_work$V3[j],input$V3[i]) - min(H3K27ac_work$V2[j],input$V2[i]) 
+		sum_length <- (input$V3[i] - input$V2[i]) + (H3K27ac_work$V3[j]- H3K27ac_work$V2[j])
+		if(cover_length <= sum_length)  {
+			input$H3K27ac[i] <-1
+			next
+		}
+	}
+}
+
+output<- input[input$H3K27ac==1,]
+write.table(output, file=paste(file,"_H3K27ac",sep=""),sep="\t", row.names=F,col.names=T, quote=F)
+###################
+
+### Move right targets to left
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' PHiC_CHiCAGO_withCCV |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_PHiC_CHiCAGO_withCCV
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' VHiC_CHiCAGO_withCCV_outcome |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_VHiC_CHiCAGO_withCCV_outcome
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' Rao_HiC_HMEC_withCCV_right |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_Rao_HiC_HMEC_withCCV_right
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' Genome4D_ChIA-PET_withCCV_right |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_Genome4D_ChIA-PET_withCCV_right
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' Genome4D_IM-PET_withCCV_right |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_Genome4D_IM-PET_withCCV_right
+
+awk -F"\t" 'BEGIN { OFS = "\t"} {print $4,$5,$6,$1,$2,$3}' PHiC_CHiCAGO_CCV_H3K27ac |sed 1d |sed '1iV1\tV2\tV3\tV4\tV5\tV6'  > EP_PHiC_CHiCAGO_withCCV_H3K27ac
+
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+Rscript --no-save H3K27ac.R Genome4D_3C_withCCV_left
+
+Rscript --no-save H3K27ac.R EP_Genome4D_ChIA-PET_withCCV_right
+Rscript --no-save H3K27ac.R Genome4D_ChIA-PET_withCCV_left
+Rscript --no-save H3K27ac.R Genome4D_IM-PET_withCCV_left
+Rscript --no-save H3K27ac.R FANTOM5_withCCV
+
+Rscript --no-save H3K27ac.R EP_PHiC_CHiCAGO_withCCV
+Rscript --no-save H3K27ac.R EP_VHiC_CHiCAGO_withCCV_outcome
+Rscript --no-save H3K27ac.R VHiC_CHiCAGO_withCCV_bait
+Rscript --no-save H3K27ac.R EnhancerAtlas_withCCV
+Rscript --no-save H3K27ac.R SE_Cell2013_withCCV
+
+
+#### identify distal target gene for interaction data (some had genes info already; combine those without genes info)
+
+/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/Geneinfo_gencodeV38
+
+sed 1d EP_PHiC_CHiCAGO_withCCV_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"PHiC"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d EP_VHiC_CHiCAGO_withCCV_outcome_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"VHiC_out"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d VHiC_CHiCAGO_withCCV_bait_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"VHiC_bait"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d Rao_HiC_HMEC_withCCV_left_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"Rao_HiC"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d EP_Rao_HiC_HMEC_withCCV_right_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"Rao_HiC"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d Genome4D_3C_withCCV_left_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"G4D_3C"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d Genome4D_ChIA-PET_withCCV_left_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"G4D_ChIA-PET"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d EP_Genome4D_ChIA-PET_withCCV_right_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"G4D_ChIA-PET"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d Genome4D_IM-PET_withCCV_left_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"G4D_IM-PET"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d EP_Genome4D_ChIA-PET_withCCV_right_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"G4D_IM-PET"}'  >> EP_pair_CCV_at_H3K27ac
+sed 1d FANTOM5_withCCV_H3K27ac | awk -F"\t" 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,"FANTOM5"}'  >> EP_pair_CCV_at_H3K27ac
+
+R
+
+soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+gene_info_all <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/Geneinfo_gencodeV26",sep = "\t",header=T)
+gene_info <- gene_info_all[as.character(gene_info_all$chr) %in% soma_chr & as.character(gene_info_all$gene_type) %in% c("lincRNA","protein_coding"),]
+
+gene_info$promoter_start <- gene_info$TSS
+gene_info$promoter_end <- gene_info$TSS
+
+gene_info[gene_info$strand=="+",]$promoter_start <- gene_info[gene_info$strand=="+",]$TSS - 1000
+gene_info[gene_info$strand=="+",]$promoter_end <- gene_info[gene_info$strand=="+",]$TSS + 100
+
+gene_info[gene_info$strand=="-",]$promoter_start <- gene_info[gene_info$strand=="-",]$TSS - 100
+gene_info[gene_info$strand=="-",]$promoter_end <- gene_info[gene_info$strand=="-",]$TSS + 1000
+
+EP<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Annotation/EP_pair_CCV_at_H3K27ac_ALL",sep = "\t",header=F)
+EP$gene <- rep(NA,nrow(EP))
+EP$gene2 <- rep(NA,nrow(EP))
+EP$gene3 <- rep(NA,nrow(EP))
+EP$gene_note <- rep(NA,nrow(EP))
+
+for (i in 1: nrow(EP)) {
+	print(i)
+	gene_work <- gene_info[gene_info$chr==EP$V4[i],]
+	for (j in 1: nrow(gene_work)) {
+		cover_length <- max(gene_work$promoter_end[j],EP$V6[i]) - min(gene_work$promoter_start[j],EP$V5[i]) 
+		sum_length <- (EP$V6[i] - EP$V5[i]) + 1100
+		if (cover_length <= sum_length) {
+			if (is.na(EP$gene[i])) EP$gene[i] <- as.character(gene_work$ensemblID)[j]
+			else if (EP$gene[i] == as.character(gene_work$ensemblID)[j]) next
+			else {
+				if (is.na(EP$gene2[i])) EP$gene2[i] <- as.character(gene_work$ensemblID)[j]
+				else if (EP$gene2[i] == as.character(gene_work$ensemblID)[j]) next
+				else {
+					if (is.na(EP$gene3[i])) EP$gene3[i] <- as.character(gene_work$ensemblID)[j]
+					else if(EP$gene3[i] == as.character(gene_work$ensemblID)[j]) next
+					else EP$gene_note[i] <- "More_than_3_gene"
+				}
+			}
+			
+		}
+	}
+}
+
+write.table(EP[!is.na(EP$gene),], file ="EP_genes",sep="\t", row.names=F,col.names=T, quote=F)
+
+######### Annotate Open chromatin (ATAC-seq/Dnase-seq), active enhancer (H3K27ac), TF binding sites
+## Annotate_CCV.R
+library(methods) 
+args <- commandArgs(trailingOnly=T)
+section <- as.numeric(args[1])
+#section<-2
+start <-100*(section-1)+1 
+end <- 100*section
+
+CCV0<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_summary_new.txt",sep = "\t",header=T)
+end2<-min(end,nrow(CCV0))
+CCV<-CCV0[start:end2,]
+
+CCV$CHR<-paste("chr",CCV$Chr,sep="")
+CCV$TF <-rep(0,nrow(CCV))
+CCV$CA <-rep(0,nrow(CCV))
+CCV$H3K27ac <-rep(0,nrow(CCV))
+CCV$H3K4me3 <-rep(0,nrow(CCV))
+CCV$TF22 <-rep(0,nrow(CCV))
+CCV$ESR1 <-rep(0,nrow(CCV))
+CCV$FOXA1 <-rep(0,nrow(CCV))
+CCV$GATA3 <-rep(0,nrow(CCV))
+CCV$TCF7L2 <-rep(0,nrow(CCV))
+CCV$E2F1 <-rep(0,nrow(CCV))
+
+TF_all <- read.table("Cistrome_breast_TF_all",sep = "\t",header=F)
+CA_all <- read.table("Cistrome_breast_ca_all",sep = "\t",header=F)
+H3K27ac_all <- read.table("Cistrome_breast_hm_H3K27ac_ALL",sep = "\t",header=F)
+H3K4me3_all <- read.table("Cistrome_breast_hm_H3K4me3_ALL",sep = "\t",header=F)
+TF22 <- read.table("Cistrome_breast_TF22_all",sep = "\t",header=F)
+ESR1 <- read.table("Cistrome_breast_ESR1_all",sep = "\t",header=F)
+FOXA1 <- read.table("Cistrome_breast_FOXA1_all",sep = "\t",header=F)
+GATA3 <- read.table("Cistrome_breast_GATA3_all",sep = "\t",header=F)
+TCF7L2 <- read.table("Cistrome_breast_TCF7L2_all",sep = "\t",header=F)
+E2F1 <- read.table("Cistrome_breast_E2F1_all",sep = "\t",header=F)
+
+
+
+soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+TF <- TF_all[as.character(TF_all$V1) %in% soma_chr ,]
+CA <- CA_all[as.character(CA_all$V1) %in% soma_chr ,]
+H3K27ac <- H3K27ac_all[as.character(H3K27ac_all$V1) %in% soma_chr ,]
+H3K4me3 <- H3K4me3_all[as.character(H3K4me3_all$V1) %in% soma_chr ,]
+
+for (i in 1: nrow(CCV)) {
+#for (i in 1: 5) {
+	print(i)
+	TF_work <- TF[TF$V1==CCV$CHR[i],]
+	CA_work <- CA[CA$V1==CCV$CHR[i],]
+	H3K27ac_work <- H3K27ac[H3K27ac$V1==CCV$CHR[i],]
+	H3K4me3_work <- H3K4me3[H3K4me3$V1==CCV$CHR[i],]
+	TF22_work <- TF22[TF22$V1==CCV$CHR[i],]
+	ESR1_work <- ESR1[ESR1$V1==CCV$CHR[i],]
+	FOXA1_work <- FOXA1[FOXA1$V1==CCV$CHR[i],]
+	GATA3_work <- GATA3[GATA3$V1==CCV$CHR[i],]
+	TCF7L2_work <- TCF7L2[TCF7L2$V1==CCV$CHR[i],]
+	E2F1_work <- E2F1[E2F1$V1==CCV$CHR[i],]
+
+	for (j in 1:nrow(TF_work)) {
+		if(CCV$BP[i] >= TF_work$V2[j] & CCV$BP[i] <= TF_work$V3[j]) {
+			CCV$TF[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(CA_work)) {
+		if(CCV$BP[i] >= CA_work$V2[j] & CCV$BP[i] <= CA_work$V3[j]) {
+			CCV$CA[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(H3K27ac_work)) {
+		if(CCV$BP[i] >= H3K27ac_work$V2[j] & CCV$BP[i] <= H3K27ac_work$V3[j]) {
+			CCV$H3K27ac[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(H3K4me3_work)) {
+		if(CCV$BP[i] >= H3K4me3_work$V2[j] & CCV$BP[i] <= H3K4me3_work$V3[j]) {
+			CCV$H3K4me3[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(TF22_work)) {
+		if(CCV$BP[i] >= TF22_work$V2[j] & CCV$BP[i] <= TF22_work$V3[j]) {
+			CCV$TF22[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(ESR1_work)) {
+		if(CCV$BP[i] >= ESR1_work$V2[j] & CCV$BP[i] <= ESR1_work$V3[j]) {
+			CCV$ESR1[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(FOXA1_work)) {
+		if(CCV$BP[i] >= FOXA1_work$V2[j] & CCV$BP[i] <= FOXA1_work$V3[j]) {
+			CCV$FOXA1[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(GATA3_work)) {
+		if(CCV$BP[i] >= GATA3_work$V2[j] & CCV$BP[i] <= GATA3_work$V3[j]) {
+			CCV$GATA3[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(TCF7L2_work)) {
+		if(CCV$BP[i] >= TCF7L2_work$V2[j] & CCV$BP[i] <= TCF7L2_work$V3[j]) {
+			CCV$TCF7L2[i] <-1
+			break
+		}
+	}
+	for (j in 1:nrow(E2F1_work)) {
+		if(CCV$BP[i] >= E2F1_work$V2[j] & CCV$BP[i] <= E2F1_work$V3[j]) {
+			CCV$E2F1[i] <-1
+			break
+		}
+	}
+}
+
+write.table(CCV, file=paste("CCV_summary_annotation_p",section,sep=""),sep="\t", row.names=F,col.names=T, quote=F)
+
+
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+for i in {1..55}
+do
+Rscript --no-save Annotate_CCV.R  $i
+sed 1d CCV_summary_annotation_p$i >> CCV_summary_annotation
+done
+head -1 CCV_summary_annotation_p1 > header
+cat header CCV_summary_annotation > CCV_summary_annotation_all
+
+
+
+
+
+###### INQUISIT: Distal regulation
+EP_all_0<- read.table("/nobackup/sbcs/damon/AABCGS/Annotation/EP_genes",sep = "\t",header=T)
+gene_info <- read.table("Geneinfo_gencodeV26_soma_PL",sep = "\t",header=T)
+#gene_tss <- gene_info[,c("ensemblID","TSS")]
+gene_tss <- gene_info[,c("ensemblID","chr","TSS")]
+library(dplyr)
+EP_all<-left_join(EP_all_0,gene_tss,by=c("gene"="ensemblID"),suffix=c("",".y"))
+
+CCV<- read.table("CCV_summary_annotation_all_5518",sep = "\t",header=T)
+#CCV$CHR<-paste("chr",CCV$Chr,sep="")
+signals<-unique(CCV$Lead)
+TAD<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/chrom_interact/TAD_hg38/HMEC_Rao_2014-raw_TADs.txt",sep = "\t",header=F)
+
+EP_all$datatype <- rep(NA,nrow(EP_all))
+EP_all[EP_all$data %in% c("VHiC_bait","PHiC","G4D_ChIA-PET","VHiC_out", "Rao_HiC"),]$datatype <- "exp"
+EP_all[EP_all$data %in% c("SE_Cell2013", "G4D_IM-PET", "EnhancerAtlas","FANTOM5","SEdb"),]$datatype <- "comput"
+
+CCV$CA_Enh_TF22 <- as.numeric(CCV$H3K27ac + CCV$TF22 + CCV$CA >0)
+
+CCV$TF5_multi <- as.numeric(CCV$ESR1 + CCV$FOXA1  + CCV$GATA3  + CCV$TCF7L2  + CCV$E2F1 >1)
+
+genes<-unique(EP_all$gene)
+gene_CCV_highest <- NULL
+for (k in 1: length(genes)) {
+	print(k)
+	EP_work <- EP_all[EP_all$gene==genes[k],]
+	gene_all_CCV <- NULL
+	for (j in 1: nrow(CCV)) {
+		#print(j)
+		EP_work_intersect <- EP_work[EP_work$chr_e == CCV$CHR[j] & EP_work$start_e <= CCV$BP[j] & EP_work$end_e >= CCV$BP[j] ,]
+		if(nrow(EP_work_intersect)==0) next
+		chromatin=0
+		if("exp" %in% EP_work_intersect$datatype) chromatin=2
+		if("comput" %in% EP_work_intersect$datatype) chromatin=1		
+		if("comput" %in% EP_work_intersect$datatype & "exp" %in% EP_work_intersect$datatype) chromatin=3
+		EP_CCV <- cbind(EP_work_intersect[1,c("gene","chr","TSS")],CCV[j,c(1,2,3,6,28,29)])
+		EP_CCV$chromatin <- chromatin
+		EP_CCV$TAD <- -1
+		TAD_work <- TAD[TAD$V1==EP_CCV$chr[1],]
+		for (m in 1:nrow(TAD_work)) {
+			if( min(EP_CCV$BP[1],EP_CCV$TSS[1]) >= TAD_work$V2[m] & max(EP_CCV$BP[1],EP_CCV$TSS[1]) <= TAD_work$V3[m] ) EP_CCV$TAD[1] <- 0
+		}
+		EP_CCV$score_CCV <- EP_CCV$CA_Enh_TF22 + EP_CCV$TF5_multi + EP_CCV$chromatin + EP_CCV$TAD
+		gene_all_CCV <- rbind(gene_all_CCV,EP_CCV)
+		
+	}
+	if(class(gene_all_CCV)=="NULL") next
+	gene_all_CCV_sort <- gene_all_CCV[order(-gene_all_CCV$score_CCV),]
+	gene_CCV_highest <- rbind(gene_CCV_highest,gene_all_CCV_sort[1,])
+}
+
+driver_gene<- read.table("driver_gene_568",sep = "\t",header=F)
+driver_gene_info <- gene_info[gene_info$gene_name %in% driver_gene$V1,]
+gene_CCV_highest$driver <- as.numeric(gene_CCV_highest$gene %in% driver_gene_info$ensemblID)
+
+
+exp_ASN <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/exp/ABCC/ABCC.ASN.PEER_residuals.txt",sep = "\t",header=T)
+exp_EUR <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/exp/GTEx_EUR/GTEx_Breast_Female.all.PEER_residuals.txt",sep = "\t",header=T)
+exp_AFR <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/exp/Komen_AFR/Komen.AFR.PEER_residuals.txt",sep = "\t",header=T)
+
+
+exp_ASN  <- read.table("/gpfs52/nobackup/sbcs/pingj2/data/exp/ABCC/processed/V26/RemoveMed0_QN_Inverse_PEER/ABCC.PEER_residuals.txt",sep = "\t",header=T)
+exp_EUR <- read.table("/gpfs52/nobackup/sbcs/pingj2/data/exp/GTEx/EUR_Female/Breast/processed/V26/RemoveMed0_QN_Inverse_PEER/GTEx.EUR_Female.Breast.RMA.Inverse.PEER_Residuals.txt",sep = "\t",header=T)
+exp_AFR <- read.table("/gpfs52/nobackup/sbcs/pingj2/data/exp/Komen/AFR/V26/RemoveMed0_QN_Inverse_PEER/Komen.AFR.PEER_residuals.txt",sep = "\t",header=T)
+
+gene_asn <- names(exp_ASN)[-1]
+gene_eur <- names(exp_EUR)
+gene_afr <- names(exp_AFR)
+genes_exp <- unique(c(gene_asn,gene_eur,gene_afr))
+
+gene_CCV_highest$express <- as.numeric(gene_CCV_highest$gene %in% genes_exp) -1
+
+gene_CCV_highest$Distal_score <- gene_CCV_highest$score_CCV  + gene_CCV_highest$driver + gene_CCV_highest$express
+
+gene_CCV_highest2 <- left_join(gene_CCV_highest,gene_info[,c("gene_type","ensemblID","gene_name")],by=c("gene"="ensemblID"),suffix=c("",".y"))
+
+write.table(gene_CCV_highest2[gene_CCV_highest2$Distal_score>=5,] , file ="Distal_gt4_separate_CCV_v26_driver568",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+
+
+
+
