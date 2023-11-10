@@ -1,0 +1,371 @@
+### eQTL analysis for CCVs
+## extract CCVs from the genotype data for the gene expression datasets
+
+module load GCC/10.2.0 VCFtools/0.1.16
+for i in ${SLURM_ARRAY_TASK_ID}
+do
+vcftools --gzvcf /data/sbcs/data/genetic_data/Individual_data/Asian_genetic_data_07_2020/Data01_ASN_MEGA/TOPMed_Imputed/ASN_MEGA_TOPMed_Imputed_mafGT0.0001_rsqGT0.3_chr$i.dose.vcf.gz --snps CCV_pos2  --keep ASN_mega_sample --recode --recode-INFO-all --out CCV_ASN_mega_new_chr$i
+vcftools --gzvcf /data/sbcs/data/genetic_data/Individual_data/Asian_genetic_data_07_2020/Data02_BC_EC_T2D_Affy/TOPMed_Imputed/ASN_BC_EC_T2D_GWAS_TOPMed_Imputed_mafGT0.0001_rsqGT0.3_chr$i.dose.vcf.gz --snps CCV_pos2  --keep ASN_affy_sample --recode --recode-INFO-all --out CCV_ASN_affy_new_chr$i
+vcftools --gzvcf /nobackup/sbcs/pingj2/GTEx_v8/RootStudyConsentSet_phs000424.GTEx.v8.p2.c1.GRU/GenotypeFiles/phg001219.v1.GTEx_v8_WGS.genotype-calls-vcf.c1/byChr/GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_866Indiv.chr$i.PASS.vcf.gz --snps CCV_pos  --keep /nobackup/sbcs/pingj2/GTEx_v8/GTEx_v8_EUR_FEMALE_WHOLE_BLOOD_WGS_IDs.txt  --recode --recode-INFO-all  --out CCV_EUR_new_chr$i
+done
+
+
+module load PLINK/2.00-alpha2
+plink2 --bfile /nobackup/sbcs/damon/AABCGS/eQTL_3race/geno/Komen_AFR/Komen.AFR --extract CCV_pos2 --make-bed --out CCV_AFR_new
+#grep -w -f CCV_pos2 /nobackup/sbcs/pingj2/toDamon/geno/Komen_AFR/Komen.SNPs.rsq0.8_AvgCall0.98.txt > CCVs_AFR
+
+for i in {1..22}
+do
+plink2 --vcf CCV_ASN_mega_new_chr$i.recode.vcf --make-bed --out CCV_ASN_mega_chr$i
+plink2 --vcf CCV_ASN_affy_new_chr$i.recode.vcf  --make-bed --out CCV_ASN_affy6_chr$i
+plink2 --vcf CCV_EUR_new_chr$i.recode.vcf  --make-bed --out CCV_EUR_chr$i
+done
+
+module load PLINK/1.9b_5.2
+plink --bfile CCV_ASN_mega_chr1 --merge-list mlist --make-bed --out CCV_ASN
+plink --bfile CCV_ASN --missing --out CCV_ASN
+plink --bfile CCV_ASN --geno 0.01 --mac 5 --make-bed --update-name up_id_asn --update-ids up_sample_asn --out CCV_ASN_all
+
+plink --bfile CCV_EUR_chr1 --merge-list mlist_eur --make-bed --out CCV_EUR
+plink --bfile CCV_EUR --missing --out CCV_EUR
+plink --bfile CCV_EUR --geno 0.01 --mac 5 --make-bed --update-name up_id_eur --out CCV_EUR_all
+
+plink --bfile CCV_AFR_new --geno 0.01 --mac 5 --make-bed --update-name up_id_asn --out CCV_AFR_all
+
+
+###### Extract GWAS info and get the effect allele to count
+
+
+for i in {1..22}
+do
+grep -w -f GWAS_CCV_EUR_ASN_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_AFR_pct_fixed_chr$i.v1_1.txt >> info_GWAS_CCV_EUR_ASN_AFR
+grep -w -f GWAS_CCV_EUR_ASN /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_pct_fixed_chr$i.v1_1.txt >> info_GWAS_CCV_EUR_ASN
+grep -w -f GWAS_CCV_EUR_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_AFR_pct_fixed_chr$i.v1_1.txt >> info_GWAS_CCV_EUR_AFR
+grep -w -f GWAS_CCV_EUR /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_bd38_liftover_1pct_chr$i >> info_GWAS_CCV_EUR
+grep -w -f GWAS_CCV_ASN /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_bd38_liftover_chr$i >> info_GWAS_CCV_ASN
+grep -w -f GWAS_CCV_AFR /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_bd38_1pct_chr$i >> info_GWAS_CCV_AFR
+
+grep -w -f GWAS_ERpos_CCV_EUR_ASN_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_AFR_ERpos_pct_fixed_chr$i.v1_1.txt >> info_GWAS_ERpos_CCV_EUR_ASN_AFR 
+grep -w -f GWAS_ERpos_CCV_EUR_ASN /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_ERpos_pct_fixed_chr$i.v1_1.txt  >> info_GWAS_ERpos_CCV_EUR_ASN 
+grep -w -f GWAS_ERpos_CCV_EUR_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_AFR_ERpos_pct_fixed_chr$i.v1_1.txt >> info_GWAS_ERpos_CCV_EUR_AFR 
+grep -w -f GWAS_ERpos_CCV_EUR /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERpos_bd38_liftover_1pct_chr$i >> info_GWAS_ERpos_CCV_EUR
+
+grep -w -f GWAS_ERneg_CCV_EUR_ASN_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_AFR_ERneg_pct_fixed_chr$i.v1_1.txt >> info_GWAS_ERneg_CCV_EUR_ASN_AFR 
+grep -w -f GWAS_ERneg_CCV_EUR_ASN /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_ASN12_ERneg_pct_fixed_chr$i.v1_1.txt  >> info_GWAS_ERneg_CCV_EUR_ASN 
+grep -w -f GWAS_ERneg_CCV_EUR_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_AFR_ERneg_pct_fixed_chr$i.v1_1.txt >> info_GWAS_ERneg_CCV_EUR_AFR 
+grep -w -f GWAS_ERneg_CCV_AFR /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERneg_bd38_1pct_chr$i >> info_GWAS_ERneg_CCV_AFR 
+
+grep -w -f GWAS_TNBC_CCV_EUR_AFR /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/EUR_AFR_TNBC_pct_fixed_chr$i.v1_1.txt >> info_GWAS_TNBC_CCV_EUR_AFR 
+grep -w -f GWAS_TNBC_CCV_AFR /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_TNBC_bd38_1pct_chr$i >> info_GWAS_TNBC_CCV_AFR 
+
+
+done
+
+## summarize GWAS results into a file including: SNP TEST OTHER EAF BETA SE P N
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_CCV_EUR_ASN_AFR > GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_CCV_EUR_ASN >> GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_CCV_EUR_AFR >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_CCV_EUR >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_CCV_ASN >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_CCV_AFR >> GWAS_CCV
+
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERpos_CCV_EUR_ASN_AFR >> GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERpos_CCV_EUR_ASN >> GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERpos_CCV_EUR_AFR >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_ERpos_CCV_EUR >> GWAS_CCV
+
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERneg_CCV_EUR_ASN_AFR >> GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERneg_CCV_EUR_ASN >> GWAS_CCV
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_ERneg_CCV_EUR_AFR >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_ERneg_CCV_AFR >> GWAS_CCV
+
+awk '{print $1,toupper($2),toupper($3),$4,$8,$9,$10,$16}' info_GWAS_TNBC_CCV_EUR_AFR >> GWAS_CCV
+awk '{print $1,toupper($5),toupper($6),$7,$2,$4,$3,$8}' info_GWAS_TNBC_CCV_AFR >> GWAS_CCV
+
+
+awk '{print $1,$2}' GWAS_CCV > CCV_effect_allele_GWAS
+
+module load PLINK/2.00-alpha2
+plink2 --bfile CCV_ASN_all --export A --export-allele CCV_effect_allele_GWAS --out CCV_ASN_all
+plink2 --bfile CCV_EUR_all --export A --export-allele CCV_effect_allele_GWAS --out CCV_EUR_all
+plink2 --bfile CCV_AFR_all --export A --export-allele CCV_effect_allele_GWAS --out CCV_AFR_all
+
+
+### run eQTL analyses
+module load GCC/5.4.0-2.26  OpenMPI/1.10.3 R/3.3.3
+
+R
+
+extract_attributes <- function(gtf_attributes, att_of_interest){
+  att <- unlist(strsplit(gtf_attributes, " "))
+  if(att_of_interest %in% att){
+    return(gsub("\"|;","", att[which(att %in% att_of_interest)+1]))
+  }else{
+    return(NA)}
+}
+
+gencode <- read.table("/nobackup/sbcs/damon/AABCGS/eQTL_3race/gencode.v26.annotation.gtf",sep = "\t")
+
+names(gencode)<- c("chr", "source", "type", "start", "end", "score", "strand", "phase", "attributes") 
+genes <- gencode[gencode$type == "gene",]
+genes$attributes <- as.character(genes$attributes)
+genes$gene_type <- unlist(lapply(genes$attributes, extract_attributes, "gene_type"))
+genes$ensemblID <- unlist(lapply(genes$attributes, extract_attributes, "gene_id"))
+genes$gene_name <- unlist(lapply(genes$attributes, extract_attributes, "gene_name"))
+genes$TSS <- genes$start
+genes[genes$strand=="-",]$TSS <- genes[genes$strand=="-",]$end
+#write.table(genes[,-9], file ="Geneinfo_gencodeV26",sep="\t", row.names=F,col.names=T, quote=F)
+genes_protein_coding <- genes[genes$gene_type=="protein_coding",-9]
+write.table(genes_protein_coding, file ="Geneinfo_gencodeV26_PC",sep="\t", row.names=F,col.names=T, quote=F)
+
+
+CCV<- read.csv("/nobackup/sbcs/damon/AABCGS/eQTL_CCV/CCV_summary_new.csv",header=T)
+CCV$Group <- as.character(CCV$Group)
+#CCV_subset <- CCV[CCV$Group %in% c("EUR_ASN_AFR","EUR_ASN","ASN_AFR","ASN"),]
+#CCV_subset <- CCV[CCV$Group %in% c("EUR_ASN_AFR","EUR_ASN","EUR_AFR","EUR"),]
+CCV_subset <- CCV[CCV$Group %in% c("EUR_ASN_AFR","EUR_AFR","ASN_AFR","AFR"),]
+CCV_subset$Lead <-as.character(CCV_subset$Lead)
+signal_list <-as.character(unique(CCV_subset$Lead))
+
+
+#gene_info <- read.table("/nobackup/sbcs/damon/AABCGS/Annotation/Geneinfo_gencodeV26_soma_PL",sep = "\t",header=T)
+gene_info <- read.table("Geneinfo_gencodeV26_PC",sep = "\t",header=T)
+
+
+#exp <- read.table("/nobackup/sbcs/pingj2/data/exp/ABCC/processed/V26/RemoveMed0_QN_Inverse_PEER/ABCC.PEER_residuals.txt",sep = "\t",header=T)
+#exp <- read.table("/nobackup/sbcs/pingj2/data/exp/GTEx/EUR_Female/Breast/processed/V26/RemoveMed0_QN_Inverse_PEER/GTEx.EUR_Female.Breast.RMA.Inverse.PEER_Residuals.txt",sep = "\t",header=T)
+exp <- read.table("/nobackup/sbcs/pingj2/data/exp/Komen/AFR/V26/RemoveMed0_QN_Inverse_PEER/Komen.AFR.PEER_residuals.txt",sep = "\t",header=T)
+
+exp2<-exp
+#exp2<-exp[,-1]
+#rownames(exp2)<-as.character(exp[,1])
+#rownames(exp2)<-as.character(gsub("\\.","-",exp[,1]))
+#rownames(exp2)<-as.character(gsub("\\.","-",rownames(exp)))
+
+#geno <- read.table("/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_ASN_all.raw",header=T)
+#geno <- read.table("/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_EUR_all.raw",header=T)
+geno <- read.table("/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_AFR_all.raw",header=T)
+
+geno2 <- geno[,-c(1:6)]
+rownames(geno2)<-as.character(geno[,2])
+
+exp_final <- exp2[rownames(exp2) %in% rownames(geno2),]
+geno_final<-geno2[rownames(exp_final),]
+dim(exp_final)
+dim(geno_final)
+exp_final[1:6,1:6]
+geno_final[1:6,1:6]
+
+eqtl_results <-data.frame(Lead=NULL,Gene=NULL,SNP=NULL,Beta=NULL,SE=NULL,P=NULL,Ngene=NULL)
+for (i in 1:length(signal_list)) {
+	print(i)
+	CCV_working <- CCV_subset[CCV_subset$Lead==signal_list[i],]
+	start <- min(CCV_working$BP)
+	end <- max(CCV_working$BP)
+	chr <-paste("chr",CCV_working$Chr[1],sep="")
+	gene_info_working <- gene_info[gene_info$chr==chr & gene_info$TSS > start - 1000000 & gene_info$TSS < end + 1000000 & gene_info$ensemblID %in% names(exp_final),]
+	exp_working <- as.data.frame(exp_final[,names(exp_final) %in% gene_info_working$ensemblID])
+	if(ncol(exp_working)==0) next
+	names(exp_working) <- names(exp_final)[names(exp_final) %in% gene_info_working$ensemblID]
+	geno_working <- as.data.frame(geno_final[,names(geno_final) %in% as.character(CCV_working$Variant)])
+	if(ncol(geno_working)==0) next
+	names(geno_working) <- names(geno_final)[names(geno_final) %in% as.character(CCV_working$Variant)]
+	for (j in 1:ncol(exp_working)) {
+		#print(j)
+		for (k in 1:ncol(geno_working)) {
+			#print(k)
+			if(nrow(coef(summary(lm(exp_working[,j]~geno_working[,k])))) <2) next
+			results<-coef(summary(lm(exp_working[,j]~geno_working[,k])))[2,]
+			work<-data.frame(Lead=signal_list[i],Gene=names(exp_working)[j],SNP=names(geno_working)[k],Beta=results[1],SE=results[2],P=results[4],Ngene=ncol(exp_working))
+			rownames(work)<-NULL
+			eqtl_results<-rbind(eqtl_results,work)
+		}
+	}
+}
+write.table(eqtl_results , "eQTL_AFR_v26.txt",row.names=F,quote=F,sep="\t")
+#write.table(eqtl_results , "eQTL_ASN_v26.txt",row.names=F,quote=F,sep="\t")
+#write.table(eqtl_results , "eQTL_EUR_v26.txt",row.names=F,quote=F,sep="\t")
+
+
+##### Meta-analyze eQTL results
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+
+library(dplyr)
+
+CCV<- read.csv("/nobackup/sbcs/damon/AABCGS/eQTL_CCV/CCV_summary_new.csv",header=T)
+EQTL_EUR <- read.table("eQTL_EUR_v26.txt",sep = "\t",header=T)
+EQTL_ASN <- read.table("eQTL_ASN_v26.txt",sep = "\t",header=T)
+EQTL_AFR <- read.table("eQTL_AFR_v26.txt",sep = "\t",header=T)
+EQTL_EUR$Z <- qnorm(EQTL_EUR$P/2)*sign(EQTL_EUR$Beta) 
+EQTL_ASN$Z <- qnorm(EQTL_ASN$P/2)*sign(EQTL_ASN$Beta) 
+EQTL_AFR$Z <- qnorm(EQTL_AFR$P/2)*sign(EQTL_AFR$Beta) 
+
+EQTL_EUR$SNP<-as.character(EQTL_EUR$SNP)
+EQTL_EUR$Gene<-as.character(EQTL_EUR$Gene)
+EQTL_ASN$SNP<-as.character(EQTL_ASN$SNP)
+EQTL_ASN$Gene<-as.character(EQTL_ASN$Gene)
+EQTL_AFR$SNP<-as.character(EQTL_AFR$SNP)
+EQTL_AFR$Gene<-as.character(EQTL_AFR$Gene)
+names(EQTL_EUR)<- c("Lead.eur","Gene","SNP.eur","Beta.eur","SE.eur","P.eur","Ngene.eur","Z.eur")
+names(EQTL_ASN)<- c("Lead.asn","Gene","SNP.asn","Beta.asn","SE.asn","P.asn","Ngene.asn","Z.asn")
+names(EQTL_AFR)<- c("Lead.afr","Gene","SNP.afr","Beta.afr","SE.afr","P.afr","Ngene.afr","Z.afr")
+
+#CCV_EUR_ASN_AFR <- CCV[CCV$Group %in% c("EUR_ASN_AFR"),]
+CCV_EUR_ASN_AFR <- CCV[CCV$Group %in% c("EUR_ASN_AFR") & (CCV$Variant %in% EQTL_EUR$SNP.eur | CCV$Variant %in% EQTL_ASN$SNP.asn | CCV$Variant %in% EQTL_AFR$SNP.afr) ,]
+
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_EUR_ASN_AFR$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_EUR_ASN_AFR$Variant[i])
+	EQTL_EUR_working <- EQTL_EUR[EQTL_EUR$SNP.eur==SNP_working,]
+	EQTL_ASN_working <- EQTL_ASN[EQTL_ASN$SNP.asn==SNP_working,]
+	EQTL_AFR_working <- EQTL_AFR[EQTL_AFR$SNP.afr==SNP_working,]
+	EQTL<-full_join(EQTL_EUR_working,EQTL_ASN_working,by=c("Gene"="Gene"),suffix=c(".eur",".asn"))
+	EQTL2<-full_join(EQTL,EQTL_AFR_working,by=c("Gene"="Gene"),suffix=c("",".afr"))
+
+	
+
+	EQTL2$Z.meta <- ( rowSums(cbind(EQTL2$Z.eur*sqrt(115),EQTL2$Z.asn*sqrt(156),EQTL2$Z.afr*sqrt(151)),na.rm=TRUE) )/(sqrt(rowSums(cbind(as.numeric(!is.na(EQTL2$Z.eur))*115,as.numeric(!is.na(EQTL2$Z.asn))*156,as.numeric(!is.na(EQTL2$Z.afr))*151),na.rm=TRUE)) )
+	EQTL2$Ngene.meta <- max(EQTL2$Ngene.eur,EQTL2$Ngene.asn,EQTL2$Ngene.afr,na.rm=TRUE)
+	EQTL2$P.meta <- 2*(1-pnorm(abs(EQTL2$Z.meta)))
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.meta,Ngene=EQTL2$Ngene.meta,eQTL_P=EQTL2$P.meta)
+	temp<-as.data.frame(CCV_EUR_ASN_AFR[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_EUR_ASN_AFR.txt",row.names=F,quote=F,sep="\t")
+
+
+CCV_EUR_ASN <- CCV[CCV$Group %in% c("EUR_ASN") & (CCV$Variant %in% EQTL_EUR$SNP.eur | CCV$Variant %in% EQTL_ASN$SNP.asn ),]
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_EUR_ASN$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_EUR_ASN$Variant[i])
+	EQTL_EUR_working <- EQTL_EUR[EQTL_EUR$SNP.eur==SNP_working,]
+	EQTL_ASN_working <- EQTL_ASN[EQTL_ASN$SNP.asn==SNP_working,]
+	EQTL2<-full_join(EQTL_EUR_working,EQTL_ASN_working,by=c("Gene"="Gene"),suffix=c(".eur",".asn"))
+	if(nrow(EQTL2)==0) next
+	EQTL2$Z.meta <- ( rowSums(cbind(EQTL2$Z.eur*sqrt(115),EQTL2$Z.asn*sqrt(156)),na.rm=TRUE) )/(sqrt(rowSums(cbind(as.numeric(!is.na(EQTL2$Z.eur))*115,as.numeric(!is.na(EQTL2$Z.asn))*156),na.rm=TRUE)) )
+	EQTL2$Ngene.meta <- max(EQTL2$Ngene.eur,EQTL2$Ngene.asn,na.rm=TRUE)
+	EQTL2$P.meta <- 2*(1-pnorm(abs(EQTL2$Z.meta)))
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.meta,Ngene=EQTL2$Ngene.meta,eQTL_P=EQTL2$P.meta)
+	temp<-as.data.frame(CCV_EUR_ASN[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_EUR_ASN.txt",row.names=F,quote=F,sep="\t")
+
+
+CCV_EUR_AFR <- CCV[CCV$Group %in% c("EUR_AFR") & (CCV$Variant %in% EQTL_EUR$SNP.eur | CCV$Variant %in% EQTL_AFR$SNP.afr),]
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_EUR_AFR$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_EUR_AFR$Variant[i])
+	EQTL_EUR_working <- EQTL_EUR[EQTL_EUR$SNP.eur==SNP_working,]
+	EQTL_AFR_working <- EQTL_AFR[EQTL_AFR$SNP.afr==SNP_working,]
+	EQTL2<-full_join(EQTL_EUR_working,EQTL_AFR_working,by=c("Gene"="Gene"),suffix=c(".eur",".afr"))
+	if(nrow(EQTL2)==0) next
+	EQTL2$Z.meta <- ( rowSums(cbind(EQTL2$Z.eur*sqrt(115),EQTL2$Z.afr*sqrt(151)),na.rm=TRUE) )/(sqrt(rowSums(cbind(as.numeric(!is.na(EQTL2$Z.eur))*115,as.numeric(!is.na(EQTL2$Z.afr))*151),na.rm=TRUE)) )
+	EQTL2$Ngene.meta <- max(EQTL2$Ngene.eur,EQTL2$Ngene.afr,na.rm=TRUE)
+	EQTL2$P.meta <- 2*(1-pnorm(abs(EQTL2$Z.meta)))
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.meta,Ngene=EQTL2$Ngene.meta,eQTL_P=EQTL2$P.meta)
+	temp<-as.data.frame(CCV_EUR_AFR[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_EUR_AFR.txt",row.names=F,quote=F,sep="\t")
+
+
+
+CCV_EUR <- CCV[CCV$Group %in% c("EUR") & CCV$Variant %in% EQTL_EUR$SNP.eur ,]
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_EUR$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_EUR$Variant[i])
+	EQTL2 <- EQTL_EUR[EQTL_EUR$SNP.eur==SNP_working,]
+	if(nrow(EQTL2)==0) next
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.eur,Ngene=EQTL2$Ngene.eur,eQTL_P=EQTL2$P.eur)
+	temp<-as.data.frame(CCV_EUR[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_EUR.txt",row.names=F,quote=F,sep="\t")
+
+
+
+CCV_ASN <- CCV[CCV$Group %in% c("ASN") & CCV$Variant %in% EQTL_ASN$SNP.asn,]
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_ASN$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_ASN$Variant[i])
+	EQTL2 <- EQTL_ASN[EQTL_ASN$SNP.asn==SNP_working,]
+	if(nrow(EQTL2)==0) next
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.asn,Ngene=EQTL2$Ngene.asn,eQTL_P=EQTL2$P.asn)
+	temp<-as.data.frame(CCV_ASN[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_ASN.txt",row.names=F,quote=F,sep="\t")
+
+
+CCV_AFR <- CCV[CCV$Group %in% c("AFR") & CCV$Variant %in% EQTL_AFR$SNP.afr,]
+results_final <-data.frame(SNP=NULL,Chr=NULL,BP=NULL,Locus=NULL,Endpoint=NULL,Lead=NULL,Group=NULL,STD_ID=NULL,Variant=NULL, TEST=NULL,OTHER=NULL,EAF=NULL,BETA=NULL,SE=NULL,P=NULL,N=NULL,Variant=NULL,Gene=NULL,eQTL_Z=NULL, Ngene=NULL,eQTL_P=NULL,GWAS_Z=NULL,T.SMR=NULL,P.SMR=NULL)
+
+for (i in 1: length(CCV_AFR$Variant)) {
+	print(i)
+	SNP_working <- as.character(CCV_AFR$Variant[i])
+	EQTL2 <- EQTL_AFR[EQTL_AFR$SNP.afr==SNP_working,]
+	if(nrow(EQTL2)==0) next
+	results_working <- data.frame(Variant=SNP_working,Gene=EQTL2$Gene,eQTL_Z=EQTL2$Z.afr,Ngene=EQTL2$Ngene.afr,eQTL_P=EQTL2$P.afr)
+	temp<-as.data.frame(CCV_AFR[i,])
+	rownames(temp)<-NULL
+	results_working2 <-cbind(temp,results_working)
+	results_working2$GWAS_Z <- qnorm(results_working2$P/2)*sign(results_working2$BETA)
+	results_working2$T.SMR <- (results_working2$eQTL_Z^2 * results_working2$GWAS_Z^2)/(results_working2$eQTL_Z^2 + results_working2$GWAS_Z^2)
+	results_working2$P.SMR <- pchisq(results_working2$T.SMR, 1, lower.tail = F)
+	#results_working2$P.SMR.Bonf.Sig <- as.numeric(results_working2$P.SMR < 0.05/results_working2$Ngene)
+	rownames(results_working2)<-NULL
+	results_final<-rbind(results_final,results_working2)
+}
+write.table(results_final, "eQTL_meta_AFR.txt",row.names=F,quote=F,sep="\t")
+
+eQTL <- read.table("eQTL_meta_lead_sig_PL",sep = "\t",header=F)
+gene_info <- read.table("/nobackup/sbcs/damon/AABCGS/Annotation/Geneinfo_gencodeV26_soma_PL",sep = "\t",header=T)
+gene_info_eQTL <- gene_info[gene_info$ensemblID %in% eQTL$V18,]
+write.table(gene_info_eQTL, "eQTL_gene_info",row.names=F,quote=F,sep="\t")
+
