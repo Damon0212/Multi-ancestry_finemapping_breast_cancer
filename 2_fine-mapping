@@ -1,0 +1,337 @@
+(2) Run fine-mapping in identified risk loci
+while read i start end
+do
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=247173,127435,40138 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/BC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_EUR_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9,9 --snp_col=1,1,1 --bp_col=10,10,10 --a1_col=2,2,2 --a2_col=3,3,3 --eff_col=5,5,5 --se_col=6,6,6 --pval_col=7,7,7 --plink=plink \
+--keep-ambig=T 
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/loci_info_overall
+
+## 3race ERpos
+while read i start end
+do
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=170095,20932,26637 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERpos_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_EUR_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9,9 --snp_col=1,1,1 --bp_col=10,10,10 --a1_col=2,2,2 --a2_col=3,3,3 --eff_col=5,5,5 --se_col=6,6,6 --pval_col=7,7,7 --plink=plink \
+--keep-ambig=T  
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/loci_ERpos
+
+## 3race ERneg
+while read i start end
+do
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=122062,17267,21952 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN_AFR/ERneg_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_EUR_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9,9 --snp_col=1,1,1 --bp_col=10,10,10 --a1_col=2,2,2 --a2_col=3,3,3 --eff_col=5,5,5 --se_col=6,6,6 --pval_col=7,7,7 --plink=plink \
+--keep-ambig=T  
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/loci_ERneg
+
+
+#### EUR_ASN
+while read i start end
+do
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/BC_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/BC_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=247173,127435 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/BC_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/BC_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_EUR_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T 
+
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/loci_info_overall
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERpos_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERpos_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=170095,20932 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERpos_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERpos_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_EUR_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERneg_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERneg_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=122062,17267 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERneg_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_ASN/ERneg_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_EUR_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+
+#### EUR_AFR
+while read i start end
+do
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/BC_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/BC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=247173,40138 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/BC_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/BC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_EUR_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/loci_info_overal
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERpos_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERpos_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=170095,26637 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERpos_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERpos_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_EUR_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERneg_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERneg_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=122062,21952 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERneg_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/ERneg_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_EUR_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/TNBC_COJO_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/TNBC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=101585,19142 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/TNBC_LD_EUR_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_EUR_AFR/TNBC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=TNBC_EUR_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+
+#### ASN_AFR
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/BC_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/BC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=127435,40138 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/BC_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/BC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERpos_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERpos_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=20932,26637 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERpos_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERpos_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERneg_COJO_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERneg_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=17267,21952 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i,/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERneg_LD_ASN_locus_chr${i}_${start}_${end},/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_ASN_AFR/ERneg_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_ASN_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9,9 --snp_col=1,1 --bp_col=10,10 --a1_col=2,2 --a2_col=3,3 --eff_col=5,5 --se_col=6,6 --pval_col=7,7 --plink=plink \
+--keep-ambig=T
+
+
+### EUR
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_COJO_EUR_locus_chr${i}_${start}_${end} \
+--n_gwas=247173 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_LD_EUR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_EUR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_COJO_EUR_locus_chr${i}_${start}_${end} \
+--n_gwas=170095 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_LD_EUR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_EUR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_COJO_EUR_locus_chr${i}_${start}_${end} \
+--n_gwas=122062 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_LD_EUR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_EUR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/TNBC_COJO_EUR_locus_chr${i}_${start}_${end} \
+--n_gwas=101585 \
+--ref_file=/nobackup/sbcs/damon/BioVU_EUR_HRC_Oct2022/BioVU_HRC_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/TNBC_LD_EUR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=TNBC_EUR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+### ASN
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=127435 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=20932 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_COJO_ASN_locus_chr${i}_${start}_${end} \
+--n_gwas=17267 \
+--ref_file=/nobackup/sbcs/damon/EUR_ASN/Asian_MEGA_BC_control/MEGA_ASN_noncase_bd38_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_LD_ASN_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_ASN_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+
+### AFR
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=40138 \
+--ref_file=/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/BC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=BC_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=26637 \
+--ref_file=/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERpos_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERpos_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=21952 \
+--ref_file=/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/ERneg_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=ERneg_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+python /nobackup/sbcs/damon/SuSiEx/SuSiEx.py \
+--sst_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/TNBC_COJO_AFR_locus_chr${i}_${start}_${end} \
+--n_gwas=19142 \
+--ref_file=/nobackup/sbcs/damon/AABCGS/RP_MEGA_rsq03/MEGA_RP_ctrl_nc_chr$i \
+--ld_file=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_single_race/TNBC_LD_AFR_locus_chr${i}_${start}_${end} \
+--out_dir=/nobackup/sbcs/damon/AABCGS/Conditional2/SusieX_results_CCV \
+--out_name=TNBC_AFR_SusieX_locus_chr${i}_${start}_${end} \
+--chr=${i} --bp=${start},${end} \
+--chr_col=9 --snp_col=1 --bp_col=10 --a1_col=2 --a2_col=3 --eff_col=5 --se_col=6 --pval_col=7 --plink=plink \
+--keep-ambig=T
+
+
+### For signals identified for overall BC, check the ER heterogeneity; For signals with significant ER heterogeneity and associated with one ER-subtype, we re-ran the fine-mapping using ER-subtype as outcome to identify the CCVs;
+while read i snp group
+do
+python  /nobackup/sbcs/damon/AABCGS/Conditional2/meta_to_metal.py <(grep -w $snp /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/${group}_ERpos_pct_fixed_chr$i.v1_1.txt) >> CCV_ER_het_check_ERpos
+python  /nobackup/sbcs/damon/AABCGS/Conditional2/meta_to_metal.py <(grep -w $snp /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/${group}_ERneg_pct_fixed_chr$i.v1_1.txt) >> CCV_ER_het_check_ERneg
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/CCV_ER_het_p1
+
+while read i snp group
+do
+grep -w $snp /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_${group}_ERpos_bd38_liftover_1pct_chr$i |awk 'BEGIN { OFS = "\t" } {print $1,$2,$3,$4,$5,$6,$7,$8}' >> CCV_ER_het_check_ERpos
+grep -w $snp /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_${group}_ERneg_bd38_liftover_1pct_chr$i |awk 'BEGIN { OFS = "\t" } {print $1,$2,$3,$4,$5,$6,$7,$8}' >> CCV_ER_het_check_ERneg
+done < /nobackup/sbcs/damon/AABCGS/Conditional2/CCV_ER_het_p2
+
+metal << EOT
+MARKER SNP
+ALLELE TEST OTHER
+EFFECT BETA
+STDERR SE
+PVALUE P
+SCHEME STDERR
+
+FREQLABEL TEST_FREQ
+AVERAGEFREQ ON
+MINMAXFREQ ON
+
+CUSTOMVARIABLE TotalSampleSize
+LABEL TotalSampleSize as N
+PROCESS CCV_ER_het_check_ERpos
+PROCESS CCV_ER_het_check_ERneg
+OUTFILE CCV_ER_het_check.v1_ .txt
+
+ANALYZE HETEROGENEITY
+QUIT
+EOT
+
