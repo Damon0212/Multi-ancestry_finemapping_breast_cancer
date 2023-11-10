@@ -1,0 +1,171 @@
+
+### MR-MEGA for overall breast cancer
+### 1, 12, and 13 Datasets for EUR, ASN, and AFR respectively
+
+cd /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA
+
+### Recode the METAL format files into the input format required by MR-MEGA 
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+do
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py /gpfs52/nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_bd38_liftover_1pct_chr$i > MR-MEGA_input_rep_EUR_bd38_chr$i
+
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SH_MEGA_chr$i ) > MR-MEGA_input_rep_SH_MEGA_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_1pct_MEGA_BC_HCES-1_chr$i ) > MR-MEGA_input_rep_MEGA_BC_HCES_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_1pct_MEGA_BC_KPOP-BRCA_chr$i ) > MR-MEGA_input_rep_MEGA_BC_KPOP_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SH_Affy_chr$i ) > MR-MEGA_input_rep_SH_Affy_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_1pct_Korean_BC_GWAS_4298_chr$i ) > MR-MEGA_input_rep_Korean_BC_GWAS_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_01pct_BBJ2_chr$i ) > MR-MEGA_input_rep_BBJ2_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SH_TW_Onco_chr$i ) > MR-MEGA_input_rep_SH_TW_Onco_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SEBCS_KOHBRA_Onco_chr$i ) > MR-MEGA_input_rep_SEBCS_KOHBRA_Onco_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_NGOBCS_HERPACC_Onco_chr$i ) > MR-MEGA_input_rep_NGOBCS_HERPACC_Onco_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SH_TW_iCOGS_chr$i ) > MR-MEGA_input_rep_SH_TW_iCOGS_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_HERPACC_iCOGS_chr$i ) > MR-MEGA_input_rep_HERPACC_iCOGS_bd38_chr$i
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' bd38_Uniq_Rep_SH_Exome_chr$i ) > MR-MEGA_input_rep_SH_Exome_bd38_chr$i
+
+
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_WGS_snp_indel_chr$i ) > MR-MEGA_input_rep_AFR_WGS_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_WashU_5pct_shared_chr$i ) > MR-MEGA_input_rep_AFR_WashU_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_MEGA_AA_Sep2022_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_MEGA_Vandy_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_MEGA_RP_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_MEGA_RP_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_MEGA_MEC_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_MEGA_USC_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_AMBER_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_AMBER_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_ROOT_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_ROOT_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_AABC_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_AABC_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_GBHS_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_GBHS_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_Onco_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_Onco_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_BioVU_5pct_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_BioVU_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_BEST_5pct_rsq95_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_BEST_chr$i 
+python /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/METAL_input_to_MR-MEGA_EUR.py <(awk 'BEGIN { OFS = "\t"} {print $1,$2,$3,$4,$5,$6,$7,$8}' /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary/Uniq_Rep_iCOGS_5pct_chr$i.disease.glm.logistic ) > MR-MEGA_input_rep_AFR_iCOGS_chr$i 
+done
+
+
+
+
+for i in  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+do
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_EUR_bd38_chr$i" > Meta_mr_list_chr$i.txt
+
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SH_MEGA_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_MEGA_BC_HCES_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_MEGA_BC_KPOP_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SH_Affy_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_Korean_BC_GWAS_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_BBJ2_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SH_TW_Onco_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SEBCS_KOHBRA_Onco_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_NGOBCS_HERPACC_Onco_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SH_TW_iCOGS_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_HERPACC_iCOGS_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_SH_Exome_bd38_chr$i" >> Meta_mr_list_chr$i.txt
+
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_WGS_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_WashU_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_MEGA_Vandy_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_MEGA_RP_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_MEGA_USC_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_AMBER_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_ROOT_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_AABC_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_GBHS_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_Onco_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_BioVU_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_BEST_chr$i" >> Meta_mr_list_chr$i.txt
+echo "/gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/MR-MEGA_input_rep_AFR_iCOGS_chr$i" >> Meta_mr_list_chr$i.txt
+done
+
+## Run MR-MEGA
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+do
+/gpfs52/nobackup/sbcs/damon/MR-MEGA/MR-MEGA -i Meta_mr_list_chr$i.txt --pc 2 -o /gpfs52/nobackup/sbcs/damon/AABCGS/GWAS_Topmed/MRMEGA/EUR_ASN_AFR_bd38_MRMEGA_chr$i
+done
+
+
+
+########## Fix-efffect cross-race
+module load  GCCcore/.8.2.0 Metal/2011-03-25
+cd /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/Summary
+for i in {1..22}
+do
+
+metal << EOT
+MARKER SNP
+ALLELE TEST OTHER
+EFFECT BETA
+STDERR SE
+PVALUE P
+SCHEME STDERR
+
+FREQLABEL TEST_FREQ
+AVERAGEFREQ ON
+MINMAXFREQ ON
+
+CUSTOMVARIABLE TotalSampleSize
+LABEL TotalSampleSize as N
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_bd38_1pct_chr$i
+OUTFILE EUR_ASN12_AFR_pct_fixed_chr$i.v1_ .txt
+
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_bd38_liftover_chr$i
+OUTFILE EUR_ASN12_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_bd38_1pct_chr$i
+OUTFILE EUR_AFR_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_bd38_1pct_chr$i
+OUTFILE ASN12_AFR_pct_fixed_chr$i.v1_ .txt
+
+##ERpos
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERpos_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERpos_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERpos_bd38_1pct_chr$i
+OUTFILE EUR_ASN12_AFR_ERpos_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERpos_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERpos_bd38_liftover_chr$i
+OUTFILE EUR_ASN12_ERpos_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERpos_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERpos_bd38_1pct_chr$i
+OUTFILE EUR_AFR_ERpos_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERpos_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERpos_bd38_1pct_chr$i
+OUTFILE ASN12_AFR_ERpos_pct_fixed_chr$i.v1_ .txt
+
+
+
+##ERneg
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERneg_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERneg_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERneg_bd38_1pct_chr$i
+OUTFILE EUR_ASN12_AFR_ERneg_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERneg_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERneg_bd38_liftover_chr$i
+OUTFILE EUR_ASN12_ERneg_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_ERneg_bd38_liftover_1pct_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERneg_bd38_1pct_chr$i
+OUTFILE EUR_AFR_ERneg_pct_fixed_chr$i.v1_ .txt
+
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_ASN12_ERneg_bd38_liftover_chr$i
+PROCESS /nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_ERneg_bd38_1pct_chr$i
+OUTFILE ASN12_AFR_ERneg_pct_fixed_chr$i.v1_ .txt
+
+## TNBC
+
+PROCESS /gpfs52/nobackup/sbcs/damon/BC_GWAS_Summary/Uniq_METAL_input_rep_EUR_TNBC_bd38_liftover_chr$i
+PROCESS /gpfs52/nobackup/sbcs/damon/BC_GWAS_Summary/METAL_input_rep_AFR_TNBC_bd38_1pct_chr$i
+OUTFILE EUR_AFR_TNBC_pct_fixed_chr$i.v1_ .txt
+
+ANALYZE HETEROGENEITY
+QUIT
+EOT
+done
+
