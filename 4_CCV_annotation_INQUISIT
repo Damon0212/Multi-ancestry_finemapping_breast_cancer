@@ -574,6 +574,83 @@ head -1 CCV_summary_annotation_p1 > header
 cat header CCV_summary_annotation > CCV_summary_annotation_all
 
 
+#### Annotate CCV using roadmap
+
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+library(methods) 
+args <- commandArgs(trailingOnly=T)
+section <- as.numeric(args[1])
+Roadmap_id <- as.character(args[2])
+#section<-2
+start <-100*(section-1)+1 
+end <- 100*section
+
+CCV0<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_summary_new.txt",sep = "\t",header=T)
+CCV0$CHR<-paste("chr",CCV0$Chr,sep="")
+end2<-min(end,nrow(CCV0))
+CCV<-CCV0[start:end2,]
+
+CCV<- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/CCV_summary_new.txt",sep = "\t",header=T)
+CCV$CHR<-paste("chr",CCV$Chr,sep="")
+
+CCV$state1<-rep(NA,nrow(CCV))
+CCV$state2<-rep(NA,nrow(CCV))
+CCV$state3<-rep(NA,nrow(CCV))
+CCV$state4<-rep(NA,nrow(CCV))
+CCV$state5<-rep(NA,nrow(CCV))
+CCV$state6<-rep(NA,nrow(CCV))
+CCV$state7<-rep(NA,nrow(CCV))
+CCV$state8<-rep(NA,nrow(CCV))
+CCV$state9<-rep(NA,nrow(CCV))
+CCV$state10<-rep(NA,nrow(CCV))
+CCV$state11<-rep(NA,nrow(CCV))
+CCV$state12<-rep(NA,nrow(CCV))
+CCV$state13<-rep(NA,nrow(CCV))
+CCV$state14<-rep(NA,nrow(CCV))
+CCV$state15<-rep(NA,nrow(CCV))
+#Roadmap <- read.table(paste("/gpfs52/nobackup/sbcs/damon/AABCGS/Functional_Annotations/",Roadmap_id,"_15_coreMarks_hg38lift_mnemonics.bed",sep=""),sep = "\t",header=F)
+Roadmap <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Functional_Annotations/E028_15_coreMarks_hg38lift_mnemonics.bed",sep = "\t",header=F)
+
+for (i in 1: nrow(CCV)) {
+	print(i)
+	Roadmap_work <- Roadmap[Roadmap$V1==CCV$CHR[i] &  Roadmap$V2 <= CCV$BP[i] & Roadmap$V3 >= CCV$BP[i],]
+	if(nrow(Roadmap_work)==0) next
+	state_list<-unique(Roadmap_work$V4)
+	for (j in 1:length(state_list)) {
+		CCV[i,17+j]<-state_list[j]
+	
+	}	
+}
+
+for (i in 1:15) {
+	print(sum(!is.na(CCV[,17+i])))
+}
+CCV[!is.na(CCV$state2),]
+CCV[!is.na(CCV$state2),]$state1 <- "4_Tx"
+
+CCV$E028 <- CCV$state1
+
+CCV$state1<-rep(NA,nrow(CCV))
+CCV$state2<-rep(NA,nrow(CCV))
+Roadmap <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Functional_Annotations/E027_15_coreMarks_hg38lift_mnemonics.bed",sep = "\t",header=F)
+for (i in 1: nrow(CCV)) {
+	print(i)
+	Roadmap_work <- Roadmap[Roadmap$V1==CCV$CHR[i] &  Roadmap$V2 <= CCV$BP[i] & Roadmap$V3 >= CCV$BP[i],]
+	if(nrow(Roadmap_work)==0) next
+	state_list<-unique(Roadmap_work$V4)
+	for (j in 1:length(state_list)) {
+		CCV[i,17+j]<-state_list[j]
+	
+	}	
+}
+
+for (i in 1:15) {
+	print(sum(!is.na(CCV[,17+i])))
+}
+CCV[!is.na(CCV$state2),]$state1 <- "1_TssA"
+CCV$E027 <- CCV$state1
+write.table(CCV[,-c(18:32)], file="CCV_summary_annotation_roadmap",sep="\t", row.names=F,col.names=T, quote=F)
+
 
 
 
@@ -655,6 +732,41 @@ gene_CCV_highest2 <- left_join(gene_CCV_highest,gene_info[,c("gene_type","ensemb
 
 write.table(gene_CCV_highest2[gene_CCV_highest2$Distal_score>=5,] , file ="Distal_gt4_separate_CCV_v26_driver568",sep="\t", row.names=F,col.names=T, quote=F)
 
+
+######### INQUISIT: Proximal regulation
+cd /gpfs52/nobackup/sbcs/damon/AABCGS/Annotation
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+gene_info<- read.table("Geneinfo_gencodeV26_soma_PL",sep = "\t",header=T)
+gene_info$promoter_start <- gene_info$TSS
+gene_info$promoter_end <- gene_info$TSS
+
+gene_info[gene_info$strand=="+",]$promoter_start <- gene_info[gene_info$strand=="+",]$TSS - 1000
+gene_info[gene_info$strand=="+",]$promoter_end <- gene_info[gene_info$strand=="+",]$TSS + 100
+
+gene_info[gene_info$strand=="-",]$promoter_start <- gene_info[gene_info$strand=="-",]$TSS - 100
+gene_info[gene_info$strand=="-",]$promoter_end <- gene_info[gene_info$strand=="-",]$TSS + 1000
+
+driver_gene<- read.table("/nobackup/sbcs/damon/AABCGS/Annotation/driver_gene",sep = "\t",header=F)
+driver_gene_info <- gene_info[gene_info$gene_name %in% driver_gene$V1,]
+
+CCV<- read.table("CCV_summary_annotation_all_5518",sep = "\t",header=T)
+CCV <- CCV[CCV$H3K4me3==1,]
+
+eqtl<-read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/eQTL_3race/eQTL_meta_all",sep = "\t",header=T)
+eqtl2 <- eqtl[eqtl$SNP %in% CCV$SNP,]
+library(dplyr)
+eqtl3 <- left_join(eqtl2,gene_info[,c(9,10,11,13,14)],by=c("Gene"="ensemblID"),suffix=c("",".y"))
+eqtl4 <- eqtl3[eqtl3$BP >= eqtl3$promoter_start & eqtl3$BP <= eqtl3$promoter_end,]
+eqtl5 <- left_join(eqtl4,CCV[,c(1,22)],by=c("SNP"="SNP"),suffix=c("",".y"))
+
+eqtl5$driver <- as.numeric(eqtl5$Gene %in% driver_gene_info$ensemblID)
+## None of them in driver_gene list
+eqtl5$eqtl_sig_nominal <- as.numeric(eqtl5$eQTL_P <0.05)
+eqtl5$eqtl_sig_bonf <- as.numeric(eqtl5$eQTL_P < 0.05/eqtl5$Ngene)
+
+write.table(eqtl5[eqtl5$eqtl_sig_nominal==1 & eqtl5$TF22==1,], file ="Proximal_score_gt2_gene_signal_v26",sep="\t", row.names=F,col.names=T, quote=F)
+
+#### INQUISIT: coding & splicing change; VEP web was used to predict the effect and identify the genes.
 
 
 
