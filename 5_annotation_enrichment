@@ -1,0 +1,169 @@
+
+CA_all <- read.table("Cistrome_breast_ca_all",sep = "\t",header=F)
+
+H3K27ac_all <- read.table("Cistrome_breast_hm_H3K27ac_ALL",sep = "\t",header=F)
+H3K4me3_all <- read.table("Cistrome_breast_hm_H3K4me3_ALL",sep = "\t",header=F)
+
+H3K27ac_all <- read.table("Cistrome_breast_H3K27ac_all",sep = "\t",header=F)
+H3K4me3_all <- read.table("Cistrome_breast_H3K4me3_all",sep = "\t",header=F)
+
+TF_all <- read.table("Cistrome_breast_TF_all",sep = "\t",header=F)
+TF22 <- read.table("Cistrome_breast_TF22_all",sep = "\t",header=F)
+ESR1 <- read.table("Cistrome_breast_ESR1_all",sep = "\t",header=F)
+FOXA1 <- read.table("Cistrome_breast_FOXA1_all",sep = "\t",header=F)
+GATA3 <- read.table("Cistrome_breast_GATA3_all",sep = "\t",header=F)
+TCF7L2 <- read.table("Cistrome_breast_TCF7L2_all",sep = "\t",header=F)
+E2F1 <- read.table("Cistrome_breast_E2F1_all",sep = "\t",header=F)
+
+#### Get the list of all variants included in the fine-mapping
+for i in {1..22}
+do
+cat /gpfs52/nobackup/sbcs/damon/AABCGS/Conditional/SusieX_single_race/EUR_ref_chr$i /gpfs52/nobackup/sbcs/damon/AABCGS/Conditional/SusieX_single_race/ASN_ref_chr$i /gpfs52/nobackup/sbcs/damon/AABCGS/Conditional/SusieX_single_race/AFR_ref_chr$i |sort |uniq > All_variant_chr$i
+awk -F: 'BEGIN { OFS = "\t"} {print $0,"chr"$1,$2,$3,$4}' All_variant_chr$i > Tab_All_variant_chr$i
+cat Tab_All_variant_chr$i >> Tab_All_variant
+done
+
+
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+
+## Annotate_genome_chr.R
+library(methods) 
+args <- commandArgs(trailingOnly=T)
+feature <- as.character(args[1])
+chr <- as.character(args[2])
+
+
+genome <- read.table(paste("Tab_All_variant_",chr,sep=""),sep = "\t",header=F)
+names(genome) <- c("Variant","CHR","BP","A1","A2")
+
+CCV <- read.table("CCV_summary_annotation_all_5518",sep = "\t",header=T)
+genome$CCV <- as.numeric(genome$Variant %in% CCV$SNP)
+#soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+
+GF_all <- read.table(paste("Cistrome_breast_",feature,"_all",sep=""),sep = "\t",header=F)
+GF <- GF_all[as.character(GF_all$V1) %in% chr ,]
+genome$GF <-rep(0,nrow(genome))
+
+for (i in 1:nrow(GF)) {
+#for (i in 1:10) {
+	print(i)
+	if(nrow(genome[genome$BP >= GF$V2[i] & genome$BP <= GF$V3[i],])>0) genome[genome$BP >= GF$V2[i] & genome$BP <= GF$V3[i],]$GF <-1
+}
+
+names(genome)[7]<-feature 
+filename <- paste("Genome_",feature,"_",chr,sep="")
+
+write.table(genome, file=filename ,sep="\t", row.names=F,col.names=T, quote=F)
+
+Rscript --no-save Annotate_genome_chr.R TF chr22
+
+
+# Annotate_genome_E028_chr.R
+library(methods)
+args <- commandArgs(trailingOnly=T)
+chr <- as.character(args[1])
+
+genome <- read.table(paste("Tab_All_variant_",chr,sep=""),sep = "\t",header=F)
+names(genome) <- c("Variant","CHR","BP","A1","A2")
+
+
+CCV <- read.table("CCV_summary_annotation_all_5518",sep = "\t",header=T)
+genome$CCV <- as.numeric(genome$Variant %in% CCV$SNP)
+#soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+
+Roadmap_all <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Functional_Annotations/E028_15_coreMarks_hg38lift_mnemonics.bed",sep = "\t",header=F)
+Roadmap <- Roadmap_all[as.character(Roadmap_all$V1) %in% chr ,]
+
+genome$E28 <-rep(NA,nrow(genome))
+for (i in 1:nrow(Roadmap)) {
+
+	print(i)
+	if(nrow(genome[genome$BP >= Roadmap$V2[i] & genome$BP <= Roadmap$V3[i],])>0) genome[genome$BP >= Roadmap$V2[i] & genome$BP <= Roadmap$V3[i],]$E28 <- Roadmap$V4[i]
+}
+
+filename <- paste("Genome_E28_",chr,sep="")
+write.table(genome, file=filename ,sep="\t", row.names=F,col.names=T, quote=F)
+
+# Annotate_genome_E027_chr.R
+library(methods)
+args <- commandArgs(trailingOnly=T)
+chr <- as.character(args[1])
+
+genome <- read.table(paste("Tab_All_variant_",chr,sep=""),sep = "\t",header=F)
+names(genome) <- c("Variant","CHR","BP","A1","A2")
+
+
+CCV <- read.table("CCV_summary_annotation_all_5518",sep = "\t",header=T)
+genome$CCV <- as.numeric(genome$Variant %in% CCV$SNP)
+#soma_chr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22")
+
+Roadmap_all <- read.table("/gpfs52/nobackup/sbcs/damon/AABCGS/Functional_Annotations/E027_15_coreMarks_hg38lift_mnemonics.bed",sep = "\t",header=F)
+Roadmap <- Roadmap_all[as.character(Roadmap_all$V1) %in% chr ,]
+
+genome$E27 <-rep(NA,nrow(genome))
+for (i in 1:nrow(Roadmap)) {
+
+	print(i)
+	if(nrow(genome[genome$BP >= Roadmap$V2[i] & genome$BP <= Roadmap$V3[i],])>0) genome[genome$BP >= Roadmap$V2[i] & genome$BP <= Roadmap$V3[i],]$E27 <- Roadmap$V4[i]
+}
+
+filename <- paste("Genome_E27_",chr,sep="")
+write.table(genome, file=filename ,sep="\t", row.names=F,col.names=T, quote=F)
+
+
+###### run the R script
+for i in {1..22}
+do
+wc -l Genome_ca_chr$i
+wc -l Genome_TF_chr$i
+wc -l Genome_TF22_chr$i
+wc -l Genome_ESR1_chr$i
+wc -l Genome_FOXA1_chr$i
+wc -l Genome_GATA3_chr$i
+wc -l Genome_TCF7L2_chr$i
+wc -l Genome_E2F1_chr$i
+wc -l Genome_H3K27ac_chr$i
+wc -l Genome_H3K4me3_chr$i
+done
+
+
+for i in {1..22}
+do
+paste Genome_ca_chr$i <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_TF_chr$i) <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_TF22_chr$i) \
+ <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_ESR1_chr$i)  <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_FOXA1_chr$i)  <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_GATA3_chr$i) \
+ <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_TCF7L2_chr$i)  <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_E2F1_chr$i) \
+ <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_H3K27ac_chr$i)  <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_H3K4me3_chr$i) \
+ <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_E28_chr$i)  <(awk 'BEGIN { OFS = "\t"}  {print $7}' Genome_E27_chr$i) > Genome_anno_chr$i
+
+sed 1d Genome_anno_chr$i >> Genome_anno_all
+done
+
+
+genome <- read.table("Genome_anno_all",sep = "\t",header=F)
+names(genome) <- c("Variant","CHR","BP","A1","A2","CCV","CA","TF","TF22","ESR1","FOXA1","GATA3","TCF7L2","E2F1","H3K27ac","H3K4me3","E28","E27")
+mean(genome$CA)
+mean(genome$TF)
+mean(genome$TF22)
+mean(genome$ESR1)
+mean(genome$FOXA1)
+mean(genome$GATA3)
+mean(genome$TCF7L2)
+mean(genome$E2F1)
+mean(genome$H3K27ac)
+mean(genome$H3K4me3)
+
+mean(genome[genome$CCV==1,]$CA)
+mean(genome[genome$CCV==1,]$TF)
+mean(genome[genome$CCV==1,]$TF22)
+mean(genome[genome$CCV==1,]$ESR1)
+mean(genome[genome$CCV==1,]$FOXA1)
+mean(genome[genome$CCV==1,]$GATA3)
+mean(genome[genome$CCV==1,]$TCF7L2)
+mean(genome[genome$CCV==1,]$E2F1)
+mean(genome[genome$CCV==1,]$H3K27ac)
+mean(genome[genome$CCV==1,]$H3K4me3)
+
+
+
+
+
