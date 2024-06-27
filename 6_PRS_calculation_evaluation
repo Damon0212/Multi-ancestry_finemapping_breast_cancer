@@ -1,0 +1,351 @@
+### PRS.332 uses lead variants of signals identified by fine-mapping, using weights from the multi-ancestry fixed-effect meta-analyses; 
+### PRS.313 uses reported variables and weights (from European populations)
+### Calculate the PRS in three validation datasets (EUR, ASN, and AFR) and evaluate the performance
+
+## EUR evaluation
+# Extract genotype from UKB dataset
+module load PLINK/2.00-alpha2
+for i in 22
+do
+plink2 --bgen /data/sbcs/programs/jiag/ukb22828_c${i}_b0_v3.bgen --sample /data/sbcs/programs/jiag/ukb22828_c22_b0_v3_s487253.sample --extract CCV_ukb_Feb2024 --make-bed --out UKB_CCV_Feb2024_chr${i}
+done
+
+module load PLINK/1.9b_5.2
+plink --bfile UKB_CCV_Feb2024_chr1 --merge-list EUR_mlist2 --update-name update_UKB_bd37 --extract snpname_UKB_bd37 --make-bed --out EUR_CCV_all
+plink --bfile EUR_CCV_all --keep UKB_UNRE_EURO_FID_IID --make-bed --out EUR_CCV_UNRE_EURO
+plink --bfile EUR_CCV_UNRE_EURO --geno 0.10 --make-bed --out EUR_CCV_UNRE_EURO_10pct
+
+module load PLINK/2.00-alpha2
+plink2 --bfile EUR_CCV_UNRE_EURO_10pct --export A --export-allele RA_list_new --out EUR_CCV_Feb2024
+
+# Combine with weight to calculate the PRS
+
+module load GCC/10.2.0  OpenMPI/4.0.5 R/4.0.5
+geno<- read.table("EUR_CCV_Feb2024.raw",sep = "\t",header=T)
+
+geno2 <- geno[,-c(1:6)]
+rownames(geno2)<-geno[,1]
+for (i in 1:ncol(geno2)) {
+	geno2[,i][is.na(geno2[,i])] <- median(geno2[,i],na.rm=T)
+
+}
+#geno2$ID <- geno[,1]
+
+weight.PRS.332  <-  read.table("weight.PRS.332",sep = "\t",header=T)
+weight.PRS.313  <-  read.table("weight.PRS.313",sep = "\t",header=T)
+
+weight.PRS.332.avail <- weight.PRS.332[weight.PRS.332$SNP %in% names(geno2) ,]
+PRS.332.weight <- as.matrix(weight.PRS.332.avail[,2])
+rownames(PRS.332.weight)<-weight.PRS.332.avail[,1]
+PRS.332.geno <- as.matrix(geno2[,rownames(PRS.332.weight)])
+PRS.332.value <- PRS.332.geno  %*% PRS.332.weight 
+
+weight.PRS.313.avail <- weight.PRS.313[weight.PRS.313$SNP %in% names(geno2) ,]
+PRS.313.weight <- as.matrix(weight.PRS.313.avail[,2])
+rownames(PRS.313.weight)<-weight.PRS.313.avail[,1]
+PRS.313.geno <- as.matrix(geno2[,rownames(PRS.313.weight)])
+PRS.313.value <- PRS.313.geno  %*% PRS.313.weight 
+
+### Matched case/control and other phenotype information
+pheno <-read.csv("/nobackup/sbcs/damon/UKB_datasets_by_project/UKB_metabolites/refresh_2023Oct/UKB_UNRE_EURO_Nov2023.csv",sep = ",",header=T)
+pheno2 <- pheno[is.na(pheno$cancer_at_baseline_regi) & pheno$Age_baseline < pheno$age_out,]
+
+pheno2$age_index <- rep(NA,nrow(pheno2))
+case<-pheno2[pheno2$breast_cancer==1,]
+case$age_index <- case$age_out
+control<-pheno2[pheno2$breast_cancer==0,]
+
+case<-case[order(case$age_out,case$YOB_cat),]
+control<-control[order(control$age_out,control$YOB_cat),]
+
+case$match_pair <- rep(NA,nrow(case))
+control$match_pair <- rep(NA,nrow(control))
+
+set.seed(1000)
+## Density sampling 
+case_matched <-NULL
+control_matched <-NULL
+library(dplyr)
+for (i in 1:nrow(case)){
+  case_working <- case[i,]
+  control_working <- control[control$age_out > case[i,]$age_out & control$Age_baseline < case[i,]$age_out & control$YOB_cat == case[i,]$YOB_cat & control$V9 == case[i,]$V9 ,]
+
+  if (nrow(control_working)==0) next
+  print(i)
+  control_selected <-sample_n(control_working,1)
+  control_selected$age_index <- case[i,]$age_out
+  control<-control[!control$ID_meta %in% control_selected$ID_meta,]
+  
+  case_working$match_pair <- paste0("pair",i)
+  control_selected$match_pair <- paste0("pair",i)
+  case_matched <- rbind(case_matched,case_working)
+  control_matched <- rbind(control_matched,control_selected)
+  
+}
+
+UKB_selected<-rbind(case_matched,control_matched)
+write.csv(UKB_selected, "UKB_selected.csv", row.names=F,quote=F)
+
+pheno_UKB <-read.csv("UKB_selected.csv",sep = ",",header=T)
+
+pheno_UKB$PRS.332<-PRS.332.value[as.character(pheno_UKB$ID_meta),]
+pheno_UKB$PRS.313<-PRS.313.value[as.character(pheno_UKB$ID_meta),]
+
+pheno_UKB$PRS.332.std <- (pheno_UKB$PRS.332 -mean(pheno_UKB[pheno_UKB$breast_cancer==0,]$PRS.332) )/sd(pheno_UKB[pheno_UKB$breast_cancer==0,]$PRS.332)
+pheno_UKB$PRS.313.std <- (pheno_UKB$PRS.313 -mean(pheno_UKB[pheno_UKB$breast_cancer==0,]$PRS.313) )/sd(pheno_UKB[pheno_UKB$breast_cancer==0,]$PRS.313)
+
+#### Performance evaluation
+
+cutps1<-quantile(pheno_UKB$PRS.332.std[pheno_UKB$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_UKB$PRS.332.std.cat <-cut(pheno_UKB$PRS.332.std,breaks=c(min(pheno_UKB$PRS.332.std),cutps1,max(pheno_UKB$PRS.332.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.332.std.cat, data = pheno_UKB, summary) 
+
+cutps2<-quantile(pheno_UKB$PRS.313.std[pheno_UKB$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_UKB$PRS.313.std.cat <-cut(pheno_UKB$PRS.313.std,breaks=c(min(pheno_UKB$PRS.313.std),cutps2,max(pheno_UKB$PRS.313.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.313.std.cat, data = pheno_UKB, summary) 
+
+
+
+pheno_UKB$array <- as.numeric(pheno_UKB$V9!="UKBB")
+pheno_UKB$YOB1 <- as.numeric(pheno_UKB$YOB_cat ==1)
+pheno_UKB$YOB2 <- as.numeric(pheno_UKB$YOB_cat ==2)
+pheno_UKB$YOB3 <- as.numeric(pheno_UKB$YOB_cat ==3)#ref
+pheno_UKB$YOB4 <- as.numeric(pheno_UKB$YOB_cat ==4)
+pheno_UKB$YOB5 <- as.numeric(pheno_UKB$YOB_cat ==5)
+pheno_UKB$YOB6 <- as.numeric(pheno_UKB$YOB_cat ==6)
+pheno_UKB$YOB7 <- as.numeric(pheno_UKB$YOB_cat ==7)
+
+
+mod_PRS_332 <-glm(breast_cancer~PRS.332.std + age_index + array + V32 + V33 + V34 + V35 + V36 + relevel(as.factor(YOB_cat),3),family=binomial,data=pheno_UKB)
+mod_PRS_332 <-glm(breast_cancer~relevel(PRS.332.std.cat,3) + age_index + array + V32 + V33 + V34 + V35 + V36 + relevel(as.factor(YOB_cat),3) ,family=binomial,data=pheno_UKB)
+summary(mod_PRS_332)
+2*pnorm(abs(12.243), lower.tail = F)
+exp(confint(mod_PRS_332))
+
+mod_PRS_313 <-glm(breast_cancer~PRS.313.std + age_index + array + V32 + V33 + V34 + V35 + V36 + relevel(as.factor(YOB_cat),3) ,family=binomial,data=pheno_UKB)
+mod_PRS_313 <-glm(breast_cancer~relevel(PRS.313.std.cat,3)+ age_index + array + V32 + V33 + V34 + V35 + V36 + relevel(as.factor(YOB_cat),3) ,family=binomial,data=pheno_UKB)
+summary(mod_PRS_313)
+exp(confint(mod_PRS_313))
+
+write.csv(pheno_UKB[,c("breast_cancer","PRS.313.std","PRS.332.std","PRS.332.eur.std","age_index","array","YOB1","YOB2","YOB3","YOB4","YOB5","YOB6","YOB7","V32","V33","V34","V35","V36") ], "PRS_UKB_brief.csv", row.names=F,quote=F)
+
+#### ASN evaluation
+
+module load PLINK/1.9b_5.2
+# ASN_shanghai_id 
+plink --bfile ASN_MEGA_CCV_Feb2024_chr1 --merge-list ASN_mlist_new --keep ASN_IID --geno 0.10 --make-bed --out ASN_SH_CCV
+plink --bfile ASN_SH_CCV --update-name update_snp_bd37_ASN_uniq --extract snpname_ASN  --make-bed --out ASN_SH_CCV_Feb2024
+
+module load PLINK/2.00-alpha2
+plink2 --bfile ASN_SH_CCV_Feb2024 --export A --export-allele RA_list_new --out ASN_CCV_Feb2024
+
+
+geno<- read.table("ASN_CCV_Feb2024.raw",sep = "\t",header=T)
+
+geno2 <- geno[,-c(1:6)]
+rownames(geno2)<-geno[,1]
+for (i in 1:ncol(geno2)) {
+	geno2[,i][is.na(geno2[,i])] <- median(geno2[,i],na.rm=T)
+
+}
+#geno2$ID <- geno[,1]
+
+library(dplyr)
+pheno <-read.csv("SH_BC_ages_er_0804_MEGA.csv",sep = ",",header=T)
+pheno1 <- pheno[pheno$Study_Sample_ID %in% rownames(geno2),]
+pca <-read.table("SBCGS_MEGA_PCA",sep = "\t",header=F)
+pca<-pca[,-1]
+pheno2<-left_join(pheno1,pca,by=c("ID"="V2"),suffix=c("",".y"))
+
+pheno2$breast_cancer <- rep(NA,nrow(pheno2))
+pheno2[pheno2$BC_status_old=="BC_case",]$breast_cancer<-1
+pheno2[pheno2$BC_status_old=="BC_control",]$breast_cancer<-0
+
+pheno2$age_index <- rep(NA,nrow(pheno2))
+case<-pheno2[pheno2$breast_cancer==1 & !is.na(pheno2$age_diag),]
+case$age_index <- case$age_diag
+control<-pheno2[pheno2$breast_cancer==0,]
+
+#case<-case[order(case$age_out,case$YOB_cat),]
+#control<-control[order(control$age_out,control$YOB_cat),]
+
+case$match_pair <- rep(NA,nrow(case))
+control$match_pair <- rep(NA,nrow(control))
+
+set.seed(1000)
+## Density sampling 
+case_matched <-NULL
+control_matched <-NULL
+
+for (i in 1:nrow(case)){
+ # print(i)
+  case_working <- case[i,]
+  control_working <- control[control$age_last > case[i,]$age_diag & control$age_intv < case[i,]$age_diag  ,]
+
+  if (nrow(control_working)==0) next
+  print(i)
+  control_selected <-sample_n(control_working,1)
+  control_selected$age_index <- case[i,]$age_diag
+  control<-control[!control$ID %in% control_selected$ID,]
+  
+  case_working$match_pair <- paste0("pair",i)
+  control_selected$match_pair <- paste0("pair",i)
+  case_matched <- rbind(case_matched,case_working)
+  control_matched <- rbind(control_matched,control_selected)
+  
+}
+
+
+SBCGS_selected<-rbind(case_matched,control_matched)
+write.csv(SBCGS_selected, "SBCGS_selected.csv", row.names=F,quote=F)
+
+pheno_SBCGS <-read.csv("SBCGS_selected.csv",sep = ",",header=T)
+
+weight.PRS.332  <-  read.table("weight.PRS.332",sep = "\t",header=T)
+weight.PRS.313  <-  read.table("weight.PRS.313",sep = "\t",header=T)
+
+
+weight.PRS.332.avail <- weight.PRS.332[weight.PRS.332$SNP %in% names(geno2) ,]
+PRS.332.weight <- as.matrix(weight.PRS.332.avail[,2])
+rownames(PRS.332.weight)<-weight.PRS.332.avail[,1]
+PRS.332.geno <- as.matrix(geno2[,rownames(PRS.332.weight)])
+PRS.332.value <- PRS.332.geno  %*% PRS.332.weight 
+
+weight.PRS.313.avail <- weight.PRS.313[weight.PRS.313$SNP %in% names(geno2) ,]
+PRS.313.weight <- as.matrix(weight.PRS.313.avail[,2])
+rownames(PRS.313.weight)<-weight.PRS.313.avail[,1]
+PRS.313.geno <- as.matrix(geno2[,rownames(PRS.313.weight)])
+PRS.313.value <- PRS.313.geno  %*% PRS.313.weight 
+
+
+pheno_SBCGS$PRS.332<-PRS.332.value[as.character(pheno_SBCGS$ID),]
+pheno_SBCGS$PRS.313<-PRS.313.value[as.character(pheno_SBCGS$ID),]
+
+pheno_SBCGS$PRS.332.std <- (pheno_SBCGS$PRS.332 -mean(pheno_SBCGS[pheno_SBCGS$breast_cancer==0,]$PRS.332) )/sd(pheno_SBCGS[pheno_SBCGS$breast_cancer==0,]$PRS.332)
+pheno_SBCGS$PRS.313.std <- (pheno_SBCGS$PRS.313 -mean(pheno_SBCGS[pheno_SBCGS$breast_cancer==0,]$PRS.313) )/sd(pheno_SBCGS[pheno_SBCGS$breast_cancer==0,]$PRS.313)
+
+
+cutps1<-quantile(pheno_SBCGS$PRS.332.std[pheno_SBCGS$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_SBCGS$PRS.332.std.cat <-cut(pheno_SBCGS$PRS.332.std,breaks=c(min(pheno_SBCGS$PRS.332.std),cutps1,max(pheno_SBCGS$PRS.332.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.332.std.cat, data = pheno_SBCGS, summary) 
+
+cutps2<-quantile(pheno_SBCGS$PRS.313.std[pheno_SBCGS$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_SBCGS$PRS.313.std.cat <-cut(pheno_SBCGS$PRS.313.std,breaks=c(min(pheno_SBCGS$PRS.313.std),cutps2,max(pheno_SBCGS$PRS.313.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.313.std.cat, data = pheno_SBCGS, summary) 
+
+
+mod_PRS_332 <-glm(breast_cancer~PRS.332.std + age_index + V3 + V4 + V5 + V6 + V7 ,family=binomial,data=pheno_SBCGS)
+mod_PRS_332 <-glm(breast_cancer~relevel(PRS.332.std.cat,3) + age_index + V3 + V4 + V5 + V6 + V7 ,family=binomial,data=pheno_SBCGS)
+summary(mod_PRS_332)
+exp(confint(mod_PRS_332))
+
+mod_PRS_313 <-glm(breast_cancer~PRS.313.std + age_index + V3 + V4 + V5 + V6 + V7 ,family=binomial,data=pheno_SBCGS)
+mod_PRS_313 <-glm(breast_cancer~relevel(PRS.313.std.cat,3) + age_index + V3 + V4 + V5 + V6 + V7 ,family=binomial,data=pheno_SBCGS)
+summary(mod_PRS_313)
+exp(confint(mod_PRS_313))
+
+#### AFR evaluation
+
+for i in {1..22}
+do
+plink2 --bfile /nobackup/sbcs/damon/AABCGS/AA_PRS/ROOT_valid_chr$i --extract AFR_pos_bd38 --make-bed --out ROOT_CCV_Feb2024_chr$i
+plink2 --bfile /nobackup/sbcs/damon/AABCGS/AA_PRS/MEGA_valid_chr$i --extract AFR_pos_bd38 --make-bed --out MEGA_CCV_Feb2024_chr$i
+
+plink2 --pfile /nobackup/sbcs/damon/AABCGS/AA_PRS/WashU_valid_chr$i   --new-id-max-allele-len 1000 --set-all-var-ids chr@:#:\$r:\$a --extract AFR_pos_bd38 --make-bed --out WashU_CCV_Feb2024_chr$i
+plink2 --pfile /nobackup/sbcs/damon/AABCGS/AA_PRS/WGS_indel_valid_chr$i   --new-id-max-allele-len 1000 --set-all-var-ids chr@:#:\$r:\$a --extract AFR_pos_bd38 --make-bed --out WGS_indel_CCV_Feb2024_chr$i
+plink2 --pfile /nobackup/sbcs/damon/AABCGS/AA_PRS/WGS_snp_valid_chr$i   --new-id-max-allele-len 1000 --set-all-var-ids chr@:#:\$r:\$a --extract AFR_pos_bd38 --make-bed --out WGS_snp_CCV_Feb2024_chr$i
+
+plink2 --vcf  /data/sbcs/data/genetic_data/Individual_data/AABCGS/TOPMed_imputed/imputation/AMBER/chr$i.dose.vcf.gz   --double-id  --keep /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/BWHS_valid_iid_double --extract AFR_pos_bd38  --make-bed --out AMBER_BWHS_CCV_Feb2024_chr$i
+plink2 --vcf /data/sbcs/data/genetic_data/Individual_data/AABCGS/TOPMed_imputed/imputation/MEGA_07_2021/Yao_MEGA_FINAL/chr$i.dose.vcf.gz --double-id  --keep /nobackup/sbcs/damon/AABCGS/GWAS_Topmed/BWHS_valid_MEGA_ID    --extract AFR_pos_bd38  --make-bed --out MEGA_BWHS_CCV_Feb2024_chr$i
+
+done
+
+module load PLINK/1.9b_5.2
+plink --bfile ROOT_CCV_Feb2024_chr1 --merge-list AFR_mlist_new  --geno 0.10  --update-name update_snp_afr --make-bed --out AFR_CCV
+
+module load PLINK/2.00-alpha2
+plink2 --bfile AFR_CCV --export A --export-allele RA_list_new --out AFR_CCV_Feb2024
+
+
+
+geno<- read.table("AFR_CCV_Feb2024.raw",sep = "\t",header=T)
+
+geno2 <- geno[,-c(1:6)]
+rownames(geno2)<-geno[,1]
+for (i in 1:ncol(geno2)) {
+	geno2[,i][is.na(geno2[,i])] <- median(geno2[,i],na.rm=T)
+
+}
+#geno2$ID <- geno[,1]
+
+library(dplyr)
+
+weight.PRS.332  <-  read.table("weight.PRS.332",sep = "\t",header=T)
+weight.PRS.313  <-  read.table("weight.PRS.313",sep = "\t",header=T)
+weight.PRS.332.afr <-  read.table("weight.PRS.332.afr",sep = "\t",header=T)
+
+weight.PRS.332.avail <- weight.PRS.332[weight.PRS.332$SNP %in% names(geno2) ,]
+PRS.332.weight <- as.matrix(weight.PRS.332.avail[,2])
+rownames(PRS.332.weight)<-weight.PRS.332.avail[,1]
+PRS.332.geno <- as.matrix(geno2[,rownames(PRS.332.weight)])
+PRS.332.value <- PRS.332.geno  %*% PRS.332.weight 
+
+weight.PRS.313.avail <- weight.PRS.313[weight.PRS.313$SNP %in% names(geno2) ,]
+PRS.313.weight <- as.matrix(weight.PRS.313.avail[,2])
+rownames(PRS.313.weight)<-weight.PRS.313.avail[,1]
+PRS.313.geno <- as.matrix(geno2[,rownames(PRS.313.weight)])
+PRS.313.value <- PRS.313.geno  %*% PRS.313.weight 
+
+pheno_AA<-read.csv("PRS_2024_BRIEF.csv",head=T)
+
+pheno_AA$breast_cancer <- pheno_AA$BC
+pheno_AA$PRS.332<-PRS.332.value[as.character(pheno_AA$IID),]
+pheno_AA$PRS.313<-PRS.313.value[as.character(pheno_AA$IID),]
+
+
+pheno_AA$PRS.332.std <- (pheno_AA$PRS.332 -mean(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.332) )/sd(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.332)
+pheno_AA$PRS.313.std <- (pheno_AA$PRS.313 -mean(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.313) )/sd(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.313)
+pheno_AA$PRS.332.afr.std <- (pheno_AA$PRS.332.afr -mean(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.332.afr) )/sd(pheno_AA[pheno_AA$breast_cancer==0,]$PRS.332.afr)
+
+pheno_AA$YOB1 <- as.numeric(pheno_AA$YrBirth<=1935)
+pheno_AA$YOB2 <- as.numeric(pheno_AA$YrBirth>1935 & pheno_AA$YrBirth<=1940)
+pheno_AA$YOB3 <- as.numeric(pheno_AA$YrBirth>1940 & pheno_AA$YrBirth<=1945)
+pheno_AA$YOB4 <- as.numeric(pheno_AA$YrBirth>1945 & pheno_AA$YrBirth<=1950)
+pheno_AA$YOB5 <- as.numeric(pheno_AA$YrBirth>1950 & pheno_AA$YrBirth<=1955) #Median
+pheno_AA$YOB6 <- as.numeric(pheno_AA$YrBirth>1955 & pheno_AA$YrBirth<=1960)
+pheno_AA$YOB7 <- as.numeric(pheno_AA$YrBirth>1960 & pheno_AA$YrBirth<=1965)
+pheno_AA$YOB8 <- as.numeric(pheno_AA$YrBirth>1965)
+
+
+cutps1<-quantile(pheno_AA$PRS.332.std[pheno_AA$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_AA$PRS.332.std.cat <-cut(pheno_AA$PRS.332.std,breaks=c(min(pheno_AA$PRS.332.std),cutps1,max(pheno_AA$PRS.332.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.332.std.cat, data = pheno_AA, summary) 
+
+cutps2<-quantile(pheno_AA$PRS.313.std[pheno_AA$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_AA$PRS.313.std.cat <-cut(pheno_AA$PRS.313.std,breaks=c(min(pheno_AA$PRS.313.std),cutps2,max(pheno_AA$PRS.313.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.313.std.cat, data = pheno_AA, summary) 
+
+cutps3<-quantile(pheno_AA$PRS.332.afr.std[pheno_AA$breast_cancer==0], p=c(0.2,0.4,0.6,0.8,0.9,0.95))
+pheno_AA$PRS.332.afr.std.cat <-cut(pheno_AA$PRS.332.afr.std,breaks=c(min(pheno_AA$PRS.332.afr.std),cutps3,max(pheno_AA$PRS.332.afr.std)),include.lowest=T)
+aggregate(as.factor(breast_cancer) ~ PRS.332.afr.std.cat, data = pheno_AA, summary)
+
+
+mod_PRS_332 <-glm(breast_cancer~PRS.332.std + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8 ,family=binomial,data=pheno_AA)
+mod_PRS_332 <-glm(breast_cancer~relevel(PRS.332.std.cat,3) + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8 ,family=binomial,data=pheno_AA)
+summary(mod_PRS_332)
+exp(confint(mod_PRS_332))
+
+2*pnorm(abs(10.498), lower.tail = F)
+
+mod_PRS_313 <-glm(breast_cancer~PRS.313.std + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8 ,family=binomial,data=pheno_AA)
+mod_PRS_313 <-glm(breast_cancer~relevel(PRS.313.std.cat,3) + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8 ,family=binomial,data=pheno_AA)
+summary(mod_PRS_313)
+exp(confint(mod_PRS_313))
+
+mod_PRS_332.afr <-glm(breast_cancer~PRS.332.afr.std + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8,family=binomial,data=pheno_AA)
+mod_PRS_332.afr <-glm(breast_cancer~relevel(PRS.332.afr.std.cat,3) + Age_GWAS + as.factor(pheno_AA$Platform5) + VAR3 + VAR4 + VAR5 + VAR6 + VAR7 + YOB1 + YOB2 + YOB3 + YOB4 + YOB6 + YOB7 + YOB8,family=binomial,data=pheno_AA)
+summary(mod_PRS_332.afr)
+exp(confint(mod_PRS_332.afr))
+
+write.csv(pheno_AA, "PRS_AABCG.csv", row.names=F,quote=F)
+
